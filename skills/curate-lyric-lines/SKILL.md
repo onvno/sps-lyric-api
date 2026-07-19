@@ -23,7 +23,7 @@ description: 从本地 SQLite 整首歌词中构造相邻多行段落，预筛�
 
 ### 1. 确认数据库与标准
 
-优先使用用户指定数据库；否则依次查找 `$LYRICS_DB_PATH`、`data/lyrics.db`、`lyric-lines-api/data/lyrics.db`。
+优先使用用户指定数据库；否则依次查找 `$LYRICS_DB_PATH`、`data/lyrics.db`、`sps-lyric-api/data/lyrics.db`。
 
 完整读取：
 

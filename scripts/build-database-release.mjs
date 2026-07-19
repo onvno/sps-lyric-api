@@ -9,7 +9,7 @@ import {
   statSync,
   writeFileSync
 } from 'node:fs';
-import { basename, resolve } from 'node:path';
+import { basename, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
@@ -86,9 +86,9 @@ export function buildDatabaseRelease(options) {
   if (!existsSync(sourcePath)) throw new Error(`Source database not found: ${sourcePath}`);
   const outputDirectory = resolve(options.outputDir || `dist/releases/${options.version}`);
   mkdirSync(outputDirectory, { recursive: true });
-  const assetPath = resolve(outputDirectory, `lyric-lines-${options.version}.db`);
+  const assetPath = resolve(outputDirectory, `sps-lyric-api-${options.version}.db`);
   const checksumPath = `${assetPath}.sha256`;
-  const manifestPath = resolve(outputDirectory, `lyric-lines-${options.version}.manifest.json`);
+  const manifestPath = resolve(outputDirectory, `sps-lyric-api-${options.version}.manifest.json`);
   const outputs = [assetPath, checksumPath, manifestPath];
   if (outputs.some((path) => existsSync(path)) && !options.force) {
     throw new Error(`Release assets already exist in ${outputDirectory}; use --force to replace them`);
@@ -139,7 +139,13 @@ export function main(argv = process.argv.slice(2)) {
     process.stdout.write(HELP);
     return;
   }
-  process.stdout.write(`${JSON.stringify(buildDatabaseRelease(options), null, 2)}\n`);
+  const result = buildDatabaseRelease(options);
+  process.stdout.write(`${JSON.stringify({
+    ...result,
+    assetPath: relative(process.cwd(), result.assetPath),
+    checksumPath: relative(process.cwd(), result.checksumPath),
+    manifestPath: relative(process.cwd(), result.manifestPath)
+  }, null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

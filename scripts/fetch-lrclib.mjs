@@ -31,7 +31,7 @@ if (!queries.length) {
       const searchUrl = new URL('https://lrclib.net/api/search');
       searchUrl.searchParams.set('q', query);
       const searchResponse = await fetch(searchUrl, {
-        headers: { 'user-agent': 'lyric-lines-api/0.2 (personal-local-library)' }
+        headers: { 'user-agent': 'sps-lyric-api/0.3 (personal-local-library)' }
       });
       if (!searchResponse.ok) throw new Error(`搜索“${query}”失败：HTTP ${searchResponse.status}`);
       const matches = await searchResponse.json();

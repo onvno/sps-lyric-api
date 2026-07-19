@@ -14,7 +14,7 @@ const startPage = Math.max(1, Number.parseInt(pageArgument?.split('=')[1] || '1'
 
 async function fetchText(url) {
   const response = await fetch(url, {
-    headers: { 'user-agent': 'lyric-lines-api/0.3 (personal-public-domain-import)' }
+    headers: { 'user-agent': 'sps-lyric-api/0.3 (personal-public-domain-import)' }
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
   return response.text();

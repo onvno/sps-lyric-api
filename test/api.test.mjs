@@ -9,7 +9,7 @@ import { createLyricServer } from '../server.mjs';
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
 async function withServer(run, serverOptions = {}) {
-  const directory = await mkdtemp(join(tmpdir(), 'lyric-lines-api-'));
+  const directory = await mkdtemp(join(tmpdir(), 'sps-lyric-api-'));
   const dbPath = join(directory, 'lyrics.db');
   const server = await createLyricServer({
     dbPath,
@@ -33,7 +33,11 @@ test('serves the site and paginated public entries', async () => {
   await withServer(async ({ base }) => {
     const page = await fetch(base);
     assert.equal(page.status, 200);
-    assert.match(await page.text(), /摘句/);
+    assert.match(await page.text(), /SPS Lyric API/);
+
+    const health = await fetch(`${base}/api/health`);
+    assert.equal(health.status, 200);
+    assert.equal((await health.json()).service, 'sps-lyric-api');
 
     const response = await fetch(`${base}/api/v1/entries?language=zh-CN&limit=2`);
     assert.equal(response.status, 200);

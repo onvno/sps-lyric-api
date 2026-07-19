@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, extname, resolve } from 'node:path';
+import { basename, dirname, extname, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
@@ -98,11 +98,18 @@ function discoverDatabase(explicitPath) {
     explicitPath,
     process.env.LYRICS_DB_PATH,
     resolve(process.cwd(), 'data/lyrics.db'),
-    resolve(process.cwd(), 'lyric-lines-api/data/lyrics.db')
+    resolve(process.cwd(), 'sps-lyric-api/data/lyrics.db')
   ].filter(Boolean).map((item) => resolve(item));
   const found = candidates.find((item) => existsSync(item));
   if (!found) throw new Error('Could not find lyrics.db. Pass --db /absolute/path/to/lyrics.db.');
   return found;
+}
+
+function portablePath(value) {
+  if (!value) return null;
+  const absolute = resolve(value);
+  const local = relative(process.cwd(), absolute);
+  return local && !local.startsWith('..') ? local : basename(absolute);
 }
 
 function cleanLine(value) {
@@ -602,15 +609,20 @@ export function main(argv = process.argv.slice(2)) {
     ? resolve(dirname(report.database), 'import-manifests', `final-candidate-rebuild-${stamp}.json`)
     : '';
   const outputPath = options.output ? resolve(options.output) : defaultOutput;
+  const portableReport = {
+    ...report,
+    database: portablePath(report.database),
+    ...(report.backup ? { backup: portablePath(report.backup) } : {})
+  };
   if (outputPath) {
     if (extname(outputPath).toLocaleLowerCase() !== '.json') throw new Error('--output must use a .json extension');
     mkdirSync(dirname(outputPath), { recursive: true });
-    writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    writeFileSync(outputPath, `${JSON.stringify(portableReport, null, 2)}\n`, 'utf8');
   }
   process.stdout.write(`${JSON.stringify({
     mode: report.mode,
-    output: outputPath || null,
-    backup: report.backup || null,
+    output: portablePath(outputPath),
+    backup: portablePath(report.backup),
     summary: report.summary,
     database_changes: report.database_changes || null
   }, null, 2)}\n`);

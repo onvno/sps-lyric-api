@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, writeFileSync } from 'node:fs';
-import { resolve, extname } from 'node:path';
+import { basename, extname, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
@@ -103,13 +103,20 @@ function discoverDatabase(explicitPath) {
     explicitPath,
     process.env.LYRICS_DB_PATH,
     resolve(process.cwd(), 'data/lyrics.db'),
-    resolve(process.cwd(), 'lyric-lines-api/data/lyrics.db')
+    resolve(process.cwd(), 'sps-lyric-api/data/lyrics.db')
   ].filter(Boolean).map((item) => resolve(item));
   const found = candidates.find((item) => existsSync(item));
   if (!found) {
     throw new Error('Could not find lyrics.db. Pass --db /absolute/path/to/lyrics.db.');
   }
   return found;
+}
+
+function portablePath(value) {
+  if (!value) return '';
+  const absolute = resolve(value);
+  const local = relative(process.cwd(), absolute);
+  return local && !local.startsWith('..') ? local : basename(absolute);
 }
 
 function normalizeForComparison(text) {
@@ -473,13 +480,14 @@ export function main(argv = process.argv.slice(2)) {
     return;
   }
   const batch = prepareReviewBatch(options);
+  const portableBatch = { ...batch, database: portablePath(batch.database) };
   const inferredFormat = options.output && extname(options.output).toLocaleLowerCase() === '.md' ? 'markdown' : 'json';
   const format = options.format || inferredFormat;
-  const output = format === 'markdown' ? toMarkdown(batch) : `${JSON.stringify(batch, null, 2)}\n`;
+  const output = format === 'markdown' ? toMarkdown(portableBatch) : `${JSON.stringify(portableBatch, null, 2)}\n`;
   if (options.output) {
     const outputPath = resolve(options.output);
     writeFileSync(outputPath, output, 'utf8');
-    process.stdout.write(`${JSON.stringify({ output: outputPath, summary: batch.summary })}\n`);
+    process.stdout.write(`${JSON.stringify({ output: portablePath(outputPath), summary: batch.summary })}\n`);
   } else {
     process.stdout.write(output);
   }

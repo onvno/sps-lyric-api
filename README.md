@@ -1,11 +1,11 @@
 ---
-name: lyric-lines-api
+name: sps-lyric-api
 description: 可搜索、投稿和审核的中英文经典歌词摘句 API 网站
 tags: [api, lyrics, curation, moderation]
 status: active
 ---
 
-# lyric-lines-api
+# sps-lyric-api
 
 ## 简介
 
@@ -37,7 +37,7 @@ status: active
 需要 Node.js 22.5 或更高版本（使用 Node 内置的 `node:sqlite`）。
 
 ```bash
-cd lyric-lines-api
+cd sps-lyric-api
 npm run db:init
 npm start
 ```
@@ -110,7 +110,7 @@ curl -X POST 'http://localhost:8787/api/v1/submissions' \
 | Jamendo | 约 50 万首独立音乐，部分曲目含歌词 | 免费 `client_id` | 保存逐曲 CC 许可链接和艺术家署名，再进入待审 |
 | Wikisource / Project Gutenberg | 公开领域历史歌曲 | 免费 | 可直接策展发布，但仍保留原文来源和适用地区 |
 | OpenCpop | 100 首中文歌、3756 个演唱切句 | 申请下载、仅非商业 CC BY-NC-ND | 不自动导入；如用于非商业研究需遵守署名、非商业和禁止演绎条件 |
-| ChineseLyrics 离线库 | 102,198 条记录，位于项目 `chinese-lyrics` | 已在本地、仅供学习交流 | 过滤伴奏/demo/制作信息，限制歌手占比，分词评分后只进入本地候选库 |
+| ChineseLyrics 离线库 | 102,198 条记录，需另行放入项目 `chinese-lyrics` | 原始 JSON 不随 Git 分发，仅供学习交流 | 过滤伴奏/demo/制作信息，限制歌手占比，分词评分后只进入本地候选库 |
 
 审核台使用方法：进入“审核”→ 输入审核口令 → 从真实曲库下载，或展开“人工上传整首歌词”粘贴本地资料 → 在“本地候选库”查看分词、评分和重复次数 → 核对词作者和版权依据 → 批准后进入公开 API。
 
@@ -138,7 +138,7 @@ npm run lyrics:fetch -- "Amazing Grace" "Auld Lang Syne" "Jingle Bells"
 # 从其他来源批量导入 40 首可追溯公版歌曲
 npm run lyrics:fetch:public-domain -- --limit=40 --start-page=1
 
-# 扫描本地 10 万首中文歌，先查看拟导入样本
+# 将另行取得的 JSON 放入 chinese-lyrics/ 后，先查看拟导入样本
 npm run lyrics:import:chinese -- --limit=800 --dry-run
 
 # 正式导入；默认每位普通歌手最多 3 首，重点歌手最多 8 首
@@ -162,7 +162,7 @@ npm run lyrics:rebuild:candidates -- --provider=chinese_lyrics,lrclib --output=/
 # 创建 SQLite 快照后，把旧单行候选转为 filtered，并写入多行 candidate
 npm run lyrics:rebuild:candidates -- --provider=chinese_lyrics,lrclib --apply
 
-# 预演旧 MySQL 备份恢复，并生成 CSV / JSON 对比清单
+# 将自有 SQL 备份放入被 Git 忽略的 backup/ 后，预演恢复并生成对比清单
 npm run lyrics:import:legacy -- --backup-dir=backup --output-dir=backup/converted
 
 # 创建一致性 SQLite 备份后，把无冲突记录恢复为 candidate
@@ -182,6 +182,8 @@ npm run lyrics:remove -- 12
 
 Git 仓库只提交程序、网页、测试、Skill 和 `data/store.json` 种子。原始中文 JSON、旧 SQL 备份、导入清单、运行数据库、WAL 文件及历史数据库快照均由 `.gitignore` 排除，避免把本地原料和可变数据库混入代码提交。
 
+构建命令会在终端显示当前机器上的输出位置，便于本地打开文件；真正上传的 manifest 只记录可移植的文件名、数据库统计和 SHA-256，不保存本机绝对路径。
+
 创建可上传到 GitHub Release 的一致性数据库快照：
 
 ```bash
@@ -190,22 +192,25 @@ npm run db:release -- --version 2026.07.19
 
 # 创建 GitHub Release；先把 OWNER/REPO 换成实际仓库
 gh release create db-2026.07.19 \
-  dist/releases/2026.07.19/lyric-lines-2026.07.19.db \
-  dist/releases/2026.07.19/lyric-lines-2026.07.19.db.sha256 \
-  dist/releases/2026.07.19/lyric-lines-2026.07.19.manifest.json \
+  dist/releases/2026.07.19/sps-lyric-api-2026.07.19.db \
+  dist/releases/2026.07.19/sps-lyric-api-2026.07.19.db.sha256 \
+  dist/releases/2026.07.19/sps-lyric-api-2026.07.19.manifest.json \
   --repo OWNER/REPO --title "Lyrics database 2026.07.19" --generate-notes
+
+# 其他用户下载同一版本的三个文件
+gh release download db-2026.07.19 --pattern 'sps-lyric-api-2026.07.19*'
 ```
 
 使用别人发布的数据库时，应先停止 API 服务，再校验并替换。安装脚本默认只预检，加入 `--apply` 后会先为现有数据库创建一致性备份，再原子替换：
 
 ```bash
 npm run db:install -- \
-  --asset /path/to/lyric-lines-2026.07.19.db \
-  --checksum /path/to/lyric-lines-2026.07.19.db.sha256
+  --asset /path/to/sps-lyric-api-2026.07.19.db \
+  --checksum /path/to/sps-lyric-api-2026.07.19.db.sha256
 
 npm run db:install -- \
-  --asset /path/to/lyric-lines-2026.07.19.db \
-  --checksum /path/to/lyric-lines-2026.07.19.db.sha256 \
+  --asset /path/to/sps-lyric-api-2026.07.19.db \
+  --checksum /path/to/sps-lyric-api-2026.07.19.db.sha256 \
   --apply
 ```
 

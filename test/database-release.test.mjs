@@ -50,7 +50,7 @@ test('builds, verifies, and installs a standalone database release', async () =>
     assert.ok(existsSync(release.checksumPath));
     assert.ok(existsSync(release.manifestPath));
     assert.equal(release.manifest.database.source_tracks, 1);
-    assert.match(readFileSync(release.checksumPath, 'utf8'), /^[a-f0-9]{64}\s{2}lyric-lines-test\.1\.db\n$/u);
+    assert.match(readFileSync(release.checksumPath, 'utf8'), /^[a-f0-9]{64}\s{2}sps-lyric-api-test\.1\.db\n$/u);
 
     const preview = installDatabaseRelease({
       asset: release.assetPath,

@@ -264,7 +264,7 @@ function buildOpenApi(origin) {
   return {
     openapi: '3.1.0',
     info: {
-      title: '摘句 Lyric Lines API',
+      title: '摘句 SPS Lyric API',
       version: '1.1.0',
       description: '人工策展的中英文经典歌词短摘录 API，支持 SQLite 本地曲库、整首下载、本地分词和人工审核。'
     },
@@ -436,7 +436,7 @@ export async function createLyricServer(options = {}) {
     try {
       const response = await externalFetch(url, {
         signal: controller.signal,
-        headers: { 'user-agent': 'lyric-lines-api/0.2 (review-source-lookup)' }
+        headers: { 'user-agent': 'sps-lyric-api/0.3 (review-source-lookup)' }
       });
       if (!response.ok) {
         const error = new Error(`外部曲库返回 ${response.status}`);
@@ -460,7 +460,7 @@ export async function createLyricServer(options = {}) {
     try {
       const response = await externalFetch(url, {
         signal: controller.signal,
-        headers: { 'user-agent': 'lyric-lines-api/0.3 (personal-local-library)' }
+        headers: { 'user-agent': 'sps-lyric-api/0.3 (personal-local-library)' }
       });
       if (!response.ok) {
         const error = new Error(`外部曲库返回 ${response.status}`);
@@ -626,7 +626,7 @@ export async function createLyricServer(options = {}) {
       if (pathname === '/api/health' && req.method === 'GET') {
         sendJson(res, 200, {
           ok: true,
-          service: 'lyric-lines-api',
+          service: 'sps-lyric-api',
           storage: 'sqlite',
           database: database.stats(),
           time: new Date().toISOString()
@@ -1153,7 +1153,7 @@ async function main() {
   const host = process.env.HOST || '127.0.0.1';
   const server = await createLyricServer();
   server.listen(port, host, () => {
-    console.log(`Lyric Lines API running at http://${host}:${port}`);
+    console.log(`SPS Lyric API running at http://${host}:${port}`);
     if (!process.env.REVIEWER_TOKEN) {
       console.warn('Using demo reviewer token. Set REVIEWER_TOKEN before deployment.');
     }

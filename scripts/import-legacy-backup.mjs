@@ -2,7 +2,7 @@
 
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
@@ -15,6 +15,13 @@ const DEFAULTS = Object.freeze({
 
 const FORMAL_COLUMNS = ['id', 'song', 'content', 'lang', 'singer', 'type', 'writer', 'contributor', 'createtime'];
 const APPLY_COLUMNS = ['id', 'song', 'content', 'lang', 'singer', 'writer', 'contributor', 'createtime'];
+
+function portablePath(value) {
+  if (!value) return '';
+  const absolute = resolve(value);
+  const local = relative(process.cwd(), absolute);
+  return local && !local.startsWith('..') ? local : basename(absolute);
+}
 
 function parseArgs(argv) {
   const options = { ...DEFAULTS };
@@ -529,13 +536,13 @@ export async function importLegacyBackup(options) {
       schema_version: 1,
       generated_at: new Date().toISOString(),
       mode: options.apply ? 'applied' : 'dry_run',
-      database: dbPath,
-      database_backup: backupPath,
+      database: portablePath(dbPath),
+      database_backup: portablePath(backupPath),
       source_files: {
-        formal: { path: formalPath, file_sha256: sha256(formalSql), rows: formalRows.length },
-        pending: { path: applyPath, file_sha256: sha256(applySql), rows: applyRows.length },
+        formal: { path: portablePath(formalPath), file_sha256: sha256(formalSql), rows: formalRows.length },
+        pending: { path: portablePath(applyPath), file_sha256: sha256(applySql), rows: applyRows.length },
         combined: {
-          path: combinedPath,
+          path: portablePath(combinedPath),
           file_sha256: sha256(combinedSql),
           formal_rows: combinedFormal.length,
           pending_rows: combinedApply.length,
@@ -599,7 +606,7 @@ export async function main(argv = process.argv.slice(2)) {
     database_before: result.report.database_before,
     database_after: result.report.database_after,
     database_backup: result.report.database_backup,
-    outputs: result.paths
+    outputs: Object.fromEntries(Object.entries(result.paths).map(([key, value]) => [key, portablePath(value)]))
   }, null, 2)}\n`);
 }
 
