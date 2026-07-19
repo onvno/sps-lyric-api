@@ -68,9 +68,11 @@ LYRICS_DB_PATH=/absolute/path/lyrics.db npm start
 
 运行数据库、原始歌词备份和导入原料都被 Git 忽略，不会随代码仓库提交。
 
-## 已入库歌曲清单
+## 歌词计划与入库清单
 
-当前已导入的 ChineseLyrics 歌曲、歌手、候选片段统计和去重键见 [歌词入库清单](./Song.md)。后续新增歌曲后，可重新生成并提交这份清单：
+计划收录和已录入歌曲的人工维护清单见 [Song.md](./Song.md)。后续新增歌曲后，请同步更新这个文件并提交。
+
+如需核对自动导入的 ChineseLyrics 逐曲统计、候选数量和去重键，见 [自动生成的入库明细](./data/import-manifests/chinese_lyrics.md)。该明细可通过以下命令重新生成：
 
 ```bash
 npm run manifest:export -- --provider=chinese_lyrics
