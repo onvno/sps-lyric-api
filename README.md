@@ -70,7 +70,7 @@ LYRICS_DB_PATH=/absolute/path/lyrics.db npm start
 
 ## 已入库歌曲清单
 
-当前已导入的 ChineseLyrics 歌曲、歌手、候选片段统计和去重键见 [歌词入库清单](./data/import-manifests/chinese_lyrics.md)。后续新增歌曲后，可重新生成并提交这份清单：
+当前已导入的 ChineseLyrics 歌曲、歌手、候选片段统计和去重键见 [歌词入库清单](./Song.md)。后续新增歌曲后，可重新生成并提交这份清单：
 
 ```bash
 npm run manifest:export -- --provider=chinese_lyrics
