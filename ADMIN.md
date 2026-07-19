@@ -87,13 +87,30 @@ npm run lyrics:rebuild:candidates -- --provider=chinese_lyrics,lrclib --apply
 
 ## 发布数据库 Release
 
-创建一致性 SQLite 快照、校验文件和 manifest：
+默认运行数据库是 `data/lyrics.db`；如果启动时设置了 `LYRICS_DB_PATH`，则以该变量指向的 `.db` 文件为准。它是你后续录入、导入和审核实际写入的数据库。
+
+不要直接把运行中的 `data/lyrics.db` 上传到 GitHub Release，也不要上传同目录的 `lyrics.db-wal` 或 `lyrics.db-shm`。请先生成一致性快照：构建命令会执行 WAL checkpoint 和 `VACUUM INTO`，再校验快照内容。
 
 ```bash
+# 默认从 data/lyrics.db 构建
 npm run db:release -- --version YYYY.MM.DD
+
+# 若使用了自定义运行数据库，明确指定它
+npm run db:release -- \
+  --db /absolute/path/lyrics.db \
+  --version YYYY.MM.DD
 ```
 
-然后将 `dist/releases/YYYY.MM.DD/` 下的 `.db`、`.db.sha256` 与 `.manifest.json` 一起上传到 GitHub Release。发布前请确认数据库中的来源、作者标注及再分发条件符合你的发布范围。
+上述命令会生成下面三个 Release 附件；请三个都上传：
+
+| 文件 | 是否上传 | 用途 |
+| --- | --- | --- |
+| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.db` | 是 | 给用户替换使用的独立 SQLite 数据库 |
+| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.db.sha256` | 是 | 数据库 SHA-256 校验文件 |
+| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.manifest.json` | 是 | 版本、统计和安装说明 |
+| `data/lyrics.db`、`lyrics.db-wal`、`lyrics.db-shm` | 否 | 本机运行文件，不作为 Release 直接上传 |
+
+用户下载 Release 后，可先停止服务，再执行 `npm run db:install -- --asset RELEASE_DB --checksum RELEASE_SHA256 --apply` 完成校验和原子替换。发布前请确认数据库中的来源、作者标注及再分发条件符合你的发布范围。
 
 ## API 一览
 
