@@ -1,0 +1,560 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "updatedAt": "2026-07-15T00:00:00.000Z",
+    "editorialPolicy": "Only public-domain, licensed, permitted, or individually reviewed short quotations may be published."
+  },
+  "entries": [
+    {
+      "id": "line_songbie_01",
+      "excerpt": "长亭外，古道边，芳草碧连天。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_songbie",
+        "title": "送别",
+        "year": 1915
+      },
+      "creators": [
+        { "name": "李叔同", "role": "作词、编曲" },
+        { "name": "John P. Ordway", "role": "原曲" }
+      ],
+      "themes": ["离别", "远行", "故人"],
+      "curatorNote": "三个缓慢铺开的地点，把告别写成一幅由近及远的长卷。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hans/%E9%80%81%E5%88%AB_%28%E6%9D%8E%E5%8F%94%E5%90%8C%29",
+        "label": "维基文库：《送别》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "中国大陆（作者逝世已超过五十年）",
+        "note": "李叔同 1942 年逝世；John P. Ordway 1880 年逝世。部署到其他司法辖区前仍应复核。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_songbie_02",
+      "excerpt": "天之涯，地之角，知交半零落。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_songbie",
+        "title": "送别",
+        "year": 1915
+      },
+      "creators": [
+        { "name": "李叔同", "role": "作词、编曲" },
+        { "name": "John P. Ordway", "role": "原曲" }
+      ],
+      "themes": ["离别", "故人", "时间"],
+      "curatorNote": "辽阔的天地与渐少的知交相对照，短短一句写尽聚散。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hans/%E9%80%81%E5%88%AB_%28%E6%9D%8E%E5%8F%94%E5%90%8C%29",
+        "label": "维基文库：《送别》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "中国大陆（作者逝世已超过五十年）",
+        "note": "李叔同 1942 年逝世；John P. Ordway 1880 年逝世。部署到其他司法辖区前仍应复核。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_molihua_01",
+      "excerpt": "好一朵美丽的茉莉花。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_molihua",
+        "title": "茉莉花"
+      },
+      "creators": [
+        { "name": "江苏传统民歌", "role": "词曲" }
+      ],
+      "themes": ["花", "赞美", "江南"],
+      "curatorNote": "一声由衷赞叹，没有铺陈，却让花香先于画面抵达。",
+      "source": {
+        "url": "https://zh.wikipedia.org/wiki/%E8%8C%89%E8%8E%89%E8%8A%B1_%28%E6%B0%91%E6%AD%8C%29",
+        "label": "《茉莉花》民歌资料",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "传统民歌文本",
+        "note": "收录传统版本短句，不包含现代改编新增歌词、编曲或录音。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_molihua_02",
+      "excerpt": "芬芳美丽满枝桠。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_molihua",
+        "title": "茉莉花"
+      },
+      "creators": [
+        { "name": "江苏传统民歌", "role": "词曲" }
+      ],
+      "themes": ["花", "盛放", "江南"],
+      "curatorNote": "嗅觉与视觉叠在一处，写的是花，也是盛放的生命力。",
+      "source": {
+        "url": "https://zh.wikipedia.org/wiki/%E8%8C%89%E8%8E%89%E8%8A%B1_%28%E6%B0%91%E6%AD%8C%29",
+        "label": "《茉莉花》民歌资料",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "传统民歌文本",
+        "note": "收录传统版本短句，不包含现代改编新增歌词、编曲或录音。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_kangding_01",
+      "excerpt": "跑马溜溜的山上，一朵溜溜的云哟。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_kangding",
+        "title": "康定情歌",
+        "originalTitle": "跑马溜溜的山上"
+      },
+      "creators": [
+        { "name": "康定传统民歌", "role": "原词曲" },
+        { "name": "吴文季", "role": "采录、整理" }
+      ],
+      "themes": ["山野", "云", "爱情"],
+      "curatorNote": "山与云一高一轻，衬出民歌开场特有的舒展和明亮。",
+      "source": {
+        "url": "https://zh.wikipedia.org/wiki/%E5%BA%B7%E5%AE%9A%E6%83%85%E6%AD%8C",
+        "label": "《康定情歌》资料",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "传统民歌文本",
+        "note": "仅收录流传已久的传统短句；具体整理版本和现代录音可能另有权利。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_kangding_02",
+      "excerpt": "月亮弯弯，康定溜溜的城哟。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_kangding",
+        "title": "康定情歌",
+        "originalTitle": "跑马溜溜的山上"
+      },
+      "creators": [
+        { "name": "康定传统民歌", "role": "原词曲" },
+        { "name": "吴文季", "role": "采录、整理" }
+      ],
+      "themes": ["月亮", "故乡", "爱情"],
+      "curatorNote": "弯月给一座城加上轮廓，地名也因此变成了想念的名字。",
+      "source": {
+        "url": "https://zh.wikipedia.org/wiki/%E5%BA%B7%E5%AE%9A%E6%83%85%E6%AD%8C",
+        "label": "《康定情歌》资料",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "传统民歌文本",
+        "note": "仅收录流传已久的传统短句；具体整理版本和现代录音可能另有权利。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_amazinggrace_01",
+      "excerpt": "Amazing grace! How sweet the sound.",
+      "language": "en",
+      "song": {
+        "id": "song_amazinggrace",
+        "title": "Amazing Grace",
+        "originalTitle": "Faith's Review and Expectation",
+        "year": 1779
+      },
+      "creators": [
+        { "name": "John Newton", "role": "Lyrics" },
+        { "name": "Traditional; tune New Britain", "role": "Melody" }
+      ],
+      "themes": ["grace", "wonder", "redemption"],
+      "curatorNote": "The opening turns an abstract idea into something almost audible and immediate.",
+      "source": {
+        "url": "https://www.loc.gov/item/2006700069/",
+        "label": "Library of Congress: Olney Hymns",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "United States",
+        "note": "Lyrics first published in 1779; only the historic text is represented here."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_amazinggrace_02",
+      "excerpt": "I once was lost, but now am found.",
+      "language": "en",
+      "song": {
+        "id": "song_amazinggrace",
+        "title": "Amazing Grace",
+        "originalTitle": "Faith's Review and Expectation",
+        "year": 1779
+      },
+      "creators": [
+        { "name": "John Newton", "role": "Lyrics" },
+        { "name": "Traditional; tune New Britain", "role": "Melody" }
+      ],
+      "themes": ["redemption", "change", "hope"],
+      "curatorNote": "A complete life change is held inside two plain, balanced clauses.",
+      "source": {
+        "url": "https://www.loc.gov/item/2006700069/",
+        "label": "Library of Congress: Olney Hymns",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "United States",
+        "note": "Lyrics first published in 1779; only the historic text is represented here."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_auldlangsyne_01",
+      "excerpt": "Should auld acquaintance be forgot?",
+      "language": "en",
+      "song": {
+        "id": "song_auldlangsyne",
+        "title": "Auld Lang Syne",
+        "year": 1788
+      },
+      "creators": [
+        { "name": "Robert Burns", "role": "Lyrics, collected and adapted" },
+        { "name": "Traditional Scottish melody", "role": "Melody" }
+      ],
+      "themes": ["friendship", "memory", "time"],
+      "curatorNote": "A question everyone knows the answer to makes remembrance feel communal.",
+      "source": {
+        "url": "https://en.wikisource.org/wiki/Auld_Lang_Syne",
+        "label": "Wikisource: Auld Lang Syne",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "Worldwide historic text",
+        "note": "Robert Burns died in 1796; the traditional text and melody are public domain."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_auldlangsyne_02",
+      "excerpt": "We'll take a cup of kindness yet.",
+      "language": "en",
+      "song": {
+        "id": "song_auldlangsyne",
+        "title": "Auld Lang Syne",
+        "year": 1788
+      },
+      "creators": [
+        { "name": "Robert Burns", "role": "Lyrics, collected and adapted" },
+        { "name": "Traditional Scottish melody", "role": "Melody" }
+      ],
+      "themes": ["friendship", "kindness", "reunion"],
+      "curatorNote": "Kindness becomes something friends can share, like a cup passed around the table.",
+      "source": {
+        "url": "https://en.wikisource.org/wiki/Auld_Lang_Syne",
+        "label": "Wikisource: Auld Lang Syne",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "Worldwide historic text",
+        "note": "Robert Burns died in 1796; the traditional text and melody are public domain."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_jinglebells_01",
+      "excerpt": "Oh, what fun it is to ride.",
+      "language": "en",
+      "song": {
+        "id": "song_jinglebells",
+        "title": "Jingle Bells",
+        "originalTitle": "The One Horse Open Sleigh",
+        "year": 1857
+      },
+      "creators": [
+        { "name": "James Lord Pierpont", "role": "Words and music" }
+      ],
+      "themes": ["winter", "joy", "journey"],
+      "curatorNote": "An exclamation catches motion and delight in the same quick breath.",
+      "source": {
+        "url": "https://www.gutenberg.org/ebooks/10535",
+        "label": "Project Gutenberg: Jingle Bells",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "United States",
+        "note": "The 1857 song is identified as public domain by Project Gutenberg."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_jinglebells_02",
+      "excerpt": "Laughing all the way.",
+      "language": "en",
+      "song": {
+        "id": "song_jinglebells",
+        "title": "Jingle Bells",
+        "originalTitle": "The One Horse Open Sleigh",
+        "year": 1857
+      },
+      "creators": [
+        { "name": "James Lord Pierpont", "role": "Words and music" }
+      ],
+      "themes": ["joy", "journey", "company"],
+      "curatorNote": "Four words make the journey itself—not the destination—the memory worth keeping.",
+      "source": {
+        "url": "https://www.gutenberg.org/ebooks/10535",
+        "label": "Project Gutenberg: Jingle Bells",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "United States",
+        "note": "The 1857 song is identified as public domain by Project Gutenberg."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_twinkle_01",
+      "excerpt": "How I wonder what you are.",
+      "language": "en",
+      "song": {
+        "id": "song_twinkle",
+        "title": "Twinkle, Twinkle, Little Star",
+        "originalTitle": "The Star",
+        "year": 1806
+      },
+      "creators": [
+        { "name": "Jane Taylor", "role": "Lyrics" },
+        { "name": "Traditional French melody", "role": "Melody" }
+      ],
+      "themes": ["wonder", "night", "childhood"],
+      "curatorNote": "The line protects curiosity instead of rushing to turn wonder into an answer.",
+      "source": {
+        "url": "https://en.wikisource.org/wiki/Rhymes_for_the_Nursery/The_Star",
+        "label": "Wikisource: The Star",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "Worldwide historic text",
+        "note": "Jane Taylor died in 1824; the poem and traditional melody are public domain."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_twinkle_02",
+      "excerpt": "Like a diamond in the sky.",
+      "language": "en",
+      "song": {
+        "id": "song_twinkle",
+        "title": "Twinkle, Twinkle, Little Star",
+        "originalTitle": "The Star",
+        "year": 1806
+      },
+      "creators": [
+        { "name": "Jane Taylor", "role": "Lyrics" },
+        { "name": "Traditional French melody", "role": "Melody" }
+      ],
+      "themes": ["wonder", "night", "light"],
+      "curatorNote": "A familiar comparison survives because it makes distance glitter within reach.",
+      "source": {
+        "url": "https://en.wikisource.org/wiki/Rhymes_for_the_Nursery/The_Star",
+        "label": "Wikisource: The Star",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "Worldwide historic text",
+        "note": "Jane Taylor died in 1824; the poem and traditional melody are public domain."
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_chile_01",
+      "excerpt": "敕勒川，阴山下。天似穹庐，笼盖四野。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_chile",
+        "title": "敕勒歌"
+      },
+      "creators": [
+        { "name": "北朝乐府民歌", "role": "词曲，作者不详" }
+      ],
+      "themes": ["草原", "天地", "故土"],
+      "curatorNote": "穹庐与四野相接，寥寥数语便撑开了草原的尺度。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hant/%E6%95%95%E5%8B%92%E6%AD%8C",
+        "label": "维基文库：《敕勒歌》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "北朝乐府民歌，作者不详，作品年代已远超各主要司法辖区保护期。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_chile_02",
+      "excerpt": "天苍苍，野茫茫，风吹草低见牛羊。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_chile",
+        "title": "敕勒歌"
+      },
+      "creators": [
+        { "name": "北朝乐府民歌", "role": "词曲，作者不详" }
+      ],
+      "themes": ["草原", "风", "生命"],
+      "curatorNote": "先写无边，再让风压低草叶，藏着的生命便忽然显现。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hant/%E6%95%95%E5%8B%92%E6%AD%8C",
+        "label": "维基文库：《敕勒歌》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "北朝乐府民歌，作者不详，作品年代已远超各主要司法辖区保护期。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_yueren_01",
+      "excerpt": "今夕何夕兮，搴中洲流。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_yueren",
+        "title": "越人歌"
+      },
+      "creators": [
+        { "name": "春秋越地民歌", "role": "原歌，作者不详" },
+        { "name": "佚名越译", "role": "楚语译词" }
+      ],
+      "themes": ["相遇", "舟", "夜晚"],
+      "curatorNote": "反复追问今夜与今日，是因为一次相遇让寻常时间突然有了名字。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hant/%E8%B6%8A%E4%BA%BA%E6%AD%8C_%28%E8%AA%AA%E8%8B%91%E7%89%88%29",
+        "label": "维基文库：《越人歌》（说苑版）",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "春秋时期古歌，传世楚语译词收录于《说苑》，属于公开领域。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_yueren_02",
+      "excerpt": "山有木兮木有枝，心悦君兮君不知。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_yueren",
+        "title": "越人歌"
+      },
+      "creators": [
+        { "name": "春秋越地民歌", "role": "原歌，作者不详" },
+        { "name": "佚名越译", "role": "楚语译词" }
+      ],
+      "themes": ["爱慕", "未言", "山木"],
+      "curatorNote": "自然里的枝叶彼此可见，唯独心意隔着一句尚未说出口的话。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hant/%E8%B6%8A%E4%BA%BA%E6%AD%8C_%28%E8%AA%AA%E8%8B%91%E7%89%88%29",
+        "label": "维基文库：《越人歌》（说苑版）",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "春秋时期古歌，传世楚语译词收录于《说苑》，属于公开领域。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_yueer_01",
+      "excerpt": "月子弯弯照九州，几家欢乐几家愁。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_yueer",
+        "title": "月子弯弯照九州"
+      },
+      "creators": [
+        { "name": "宋代吴中舟师歌", "role": "词曲，作者不详" }
+      ],
+      "themes": ["月亮", "人间", "悲欢"],
+      "curatorNote": "同一弯月照见不同人家，公共的夜色里藏着各自的命运。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hans/%E5%B1%B1%E6%AD%8C",
+        "label": "维基文库：《山歌·月子弯弯》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "宋代以来流传的吴中舟师歌，属于公开领域；采用冯梦龙《山歌》所录版本。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    },
+    {
+      "id": "line_yueer_02",
+      "excerpt": "几家夫妇同罗帐，几家飘散在他州。",
+      "language": "zh-CN",
+      "song": {
+        "id": "song_yueer",
+        "title": "月子弯弯照九州"
+      },
+      "creators": [
+        { "name": "宋代吴中舟师歌", "role": "词曲，作者不详" }
+      ],
+      "themes": ["团聚", "漂泊", "人间"],
+      "curatorNote": "相聚和飘零并置，没有评说，却让人看见同一时代的两种生活。",
+      "source": {
+        "url": "https://zh.wikisource.org/zh-hans/%E5%B1%B1%E6%AD%8C",
+        "label": "维基文库：《山歌·月子弯弯》",
+        "accessedAt": "2026-07-15"
+      },
+      "rights": {
+        "basis": "public_domain",
+        "jurisdiction": "全球公开领域",
+        "note": "宋代以来流传的吴中舟师歌，属于公开领域；采用冯梦龙《山歌》所录版本。"
+      },
+      "status": "published",
+      "createdAt": "2026-07-15T00:00:00.000Z"
+    }
+  ],
+  "submissions": []
+}

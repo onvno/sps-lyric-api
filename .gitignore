@@ -1,0 +1,22 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Offline/raw source corpora and historical database imports stay local.
+chinese-lyrics/*.json
+backup/
+
+# Runtime databases, rollback snapshots, and generated review manifests are
+# distributed separately as GitHub Release assets when appropriate.
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+data/*.tmp
+data/backups/
+data/import-manifests/
+dist/

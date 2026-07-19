@@ -1,0 +1,4 @@
+interface:
+  display_name: "歌词摘句精选"
+  short_description: "从整首歌词构造多行候选并筛选值得品味的摘句"
+  default_prompt: "Use $curate-lyric-lines to rebuild my SQLite library into adjacent multi-line final-review candidates, with at most three passages per song."

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>旧 SQL 歌词数据来源说明</title>
+    <style>
+      body { max-width: 760px; margin: 64px auto; padding: 0 24px; font: 16px/1.8 system-ui, sans-serif; color: #24211d; }
+      h1 { line-height: 1.25; }
+      code { padding: 2px 6px; background: #f2eee7; border-radius: 4px; }
+      .note { padding: 16px 20px; background: #faf6ef; border-left: 4px solid #9b7447; }
+    </style>
+  </head>
+  <body>
+    <h1>旧 SQL 歌词数据来源说明</h1>
+    <p>这些摘句由用户早期服务器的 MySQL 备份恢复，原表为 <code>sps_sps</code> 与 <code>sps_apply</code>。恢复过程保留了旧记录中的歌曲名、表演者、词作者、摘句文本、原记录标识和时间。</p>
+    <p>可读的 CSV、JSON 与逐条导入决策保存在项目的 <code>backup/converted/</code>，SQLite 导入与批准记录保存在 <code>data/import-manifests/</code>。</p>
+    <p class="note">本页用于说明本地数据沿袭关系，不构成外部歌词授权或权利证明。当前收录范围按用户要求用于个人本地歌词摘句库。</p>
+  </body>
+</html>

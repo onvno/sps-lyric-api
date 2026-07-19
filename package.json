@@ -1,0 +1,27 @@
+{
+  "name": "lyric-lines-api",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Curated bilingual lyric excerpts API with submission and moderation.",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "dev": "node --watch server.mjs",
+    "start": "node server.mjs",
+    "db:init": "node scripts/init-db.mjs",
+    "db:release": "node scripts/build-database-release.mjs",
+    "db:install": "node scripts/install-database-release.mjs",
+    "lyrics:fetch": "node scripts/fetch-lrclib.mjs",
+    "lyrics:fetch:public-domain": "node scripts/fetch-public-domain.mjs",
+    "lyrics:import:chinese": "node scripts/import-chinese-lyrics.mjs",
+    "lyrics:import:legacy": "node scripts/import-legacy-backup.mjs",
+    "lyrics:approve:legacy": "node scripts/approve-legacy-import.mjs",
+    "lyrics:curate": "node skills/curate-lyric-lines/scripts/prepare-review-batch.mjs",
+    "lyrics:rebuild:candidates": "node skills/curate-lyric-lines/scripts/rebuild-final-candidates.mjs",
+    "manifest:export": "node scripts/export-import-manifest.mjs",
+    "lyrics:remove": "node scripts/remove-local-track.mjs",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="摘句：人工策展、可搜索和投稿审核的中英文经典歌词 API。" />
+    <meta name="theme-color" content="#f3efe4" />
+    <title>摘句 · Lyric Lines API</title>
+    <link rel="stylesheet" href="/styles.css?v=20260715d" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <header class="site-header">
+      <a class="brand" href="#discover" data-nav="discover" aria-label="摘句首页">
+        <span class="brand-mark" aria-hidden="true">句</span>
+        <span class="brand-copy">
+          <strong>摘句</strong>
+          <small>LYRIC LINES</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-link is-active" data-nav="discover">发现</button>
+        <button class="nav-link" data-nav="api">API</button>
+        <button class="nav-link" data-nav="submit">投稿</button>
+        <button class="nav-link" data-nav="review">审核</button>
+      </nav>
+
+      <button class="header-cta" data-nav="submit">
+        <span>投一句</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5" /></svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <section class="view is-active" data-view="discover" aria-labelledby="discover-title">
+        <div class="hero-shell">
+          <div class="hero-ornament ornament-left" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="hero-copy">
+            <p class="eyebrow"><span></span> 把歌留在一句话里</p>
+            <h1 id="discover-title">有些歌词，<br /><em>值得被单独记住。</em></h1>
+            <p class="hero-intro">中英经典歌词短摘录，由人挑选、核对来源，再以开放 API 分享。</p>
+
+            <form class="search-box" id="search-form" role="search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+              <label class="sr-only" for="search-input">搜索歌词、歌名或创作者</label>
+              <input id="search-input" name="q" type="search" placeholder="搜索歌词、歌名或创作者……" autocomplete="off" />
+              <kbd>⌘ K</kbd>
+              <button type="submit">寻找</button>
+            </form>
+
+            <div class="hero-stats" aria-label="内容统计">
+              <span><strong id="entry-count">—</strong> 条摘句</span>
+              <i></i>
+              <span><strong id="song-count">—</strong> 首歌曲</span>
+              <i></i>
+              <span>中英双语</span>
+            </div>
+          </div>
+
+          <aside class="editor-note" aria-label="编辑说明">
+            <span class="note-pin"></span>
+            <p>“经典”不是排行榜，<br />而是某句话在你心里<br />停留得足够久。</p>
+            <small>— 摘句编辑部</small>
+          </aside>
+        </div>
+
+        <div class="collection-shell">
+          <div class="collection-heading">
+            <div>
+              <p class="section-kicker">THE COLLECTION</p>
+              <h2>今日摘句</h2>
+            </div>
+            <div class="language-filters" role="group" aria-label="按语言筛选">
+              <button class="filter-chip is-active" data-language="">全部</button>
+              <button class="filter-chip" data-language="zh-CN">中文</button>
+              <button class="filter-chip" data-language="en">English</button>
+            </div>
+            <button class="random-button" id="random-button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3c4 0 6 10 10 10h3M17 14l3 3-3 3M4 17h3c1.5 0 2.7-1.3 3.8-3M14 7c1-1.8 2-3 3-3h3M17 1l3 3-3 3" /></svg>
+              随机一句
+            </button>
+          </div>
+
+          <div class="active-search" id="active-search" hidden>
+            <span>正在搜索：<strong id="active-query"></strong></span>
+            <button id="clear-search">清除</button>
+          </div>
+
+          <div class="quote-grid" id="quote-grid" aria-live="polite"></div>
+
+          <div class="empty-state" id="empty-state" hidden>
+            <span>〽</span>
+            <h3>还没有找到这一句</h3>
+            <p>换个关键词，或把它作为新摘句投稿给我们。</p>
+            <button data-nav="submit">去投稿</button>
+          </div>
+        </div>
+
+        <div class="rights-ribbon">
+          <div>
+            <span class="rights-icon" aria-hidden="true">©</span>
+            <p><strong>尊重创作，也认真保存。</strong> 首批内容来自公开领域作品；每条新投稿都要经过来源与版权审核。</p>
+          </div>
+          <button data-nav="submit">了解投稿规则 <span>→</span></button>
+        </div>
+      </section>
+
+      <section class="view inner-view" data-view="api" aria-labelledby="api-title" hidden>
+        <div class="page-heading api-heading">
+          <p class="eyebrow"><span></span> OPEN FOR BUILDERS</p>
+          <h1 id="api-title">让一句歌词，<br />抵达更多地方。</h1>
+          <p>公开读取无需 API Key。搜索、随机抽取，或按歌曲聚合；统一返回可追溯的来源与版权依据。</p>
+          <div class="api-base">
+            <span>BASE URL</span>
+            <code id="base-url">http://localhost:8787/api/v1</code>
+            <button class="copy-button" data-copy-target="base-url" aria-label="复制 Base URL">复制</button>
+          </div>
+        </div>
+
+        <div class="api-layout">
+          <div class="endpoint-list">
+            <button class="endpoint is-active" data-endpoint="entries">
+              <span class="method get">GET</span>
+              <code>/entries</code>
+              <small>搜索摘句</small>
+            </button>
+            <button class="endpoint" data-endpoint="random">
+              <span class="method get">GET</span>
+              <code>/random</code>
+              <small>随机一句</small>
+            </button>
+            <button class="endpoint" data-endpoint="songs">
+              <span class="method get">GET</span>
+              <code>/songs</code>
+              <small>歌曲聚合</small>
+            </button>
+            <button class="endpoint" data-endpoint="submit">
+              <span class="method post">POST</span>
+              <code>/submissions</code>
+              <small>提交候选</small>
+            </button>
+          </div>
+
+          <div class="code-panel">
+            <div class="code-toolbar">
+              <div><i></i><i></i><i></i></div>
+              <span id="code-label">搜索中文摘句</span>
+              <button class="copy-button light" data-copy-target="code-sample">复制</button>
+            </div>
+            <pre><code id="code-sample"></code></pre>
+          </div>
+        </div>
+
+        <div class="api-principles">
+          <article>
+            <span>01</span>
+            <h3>一句一条</h3>
+            <p>同一首歌可有多条摘句，每条都有独立 ID 和策展说明。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>来源透明</h3>
+            <p>响应保留原始来源、访问日期、版权依据和适用地区。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>先审后发</h3>
+            <p>投稿进入待审队列，公开读取接口只返回审核通过的内容。</p>
+          </article>
+        </div>
+
+        <p class="openapi-link">需要机器可读文档？<a href="/api/v1/openapi.json" target="_blank" rel="noreferrer">打开 OpenAPI 3.1 JSON ↗</a></p>
+      </section>
+
+      <section class="view inner-view" data-view="submit" aria-labelledby="submit-title" hidden>
+        <div class="form-page-grid">
+          <div class="form-intro">
+            <p class="eyebrow"><span></span> CONTRIBUTE A LINE</p>
+            <h1 id="submit-title">把你记住的那一句，<br /><em>交给更多人。</em></h1>
+            <p>我们收短摘录，不收整首歌词。请同时提供创作者、来源链接，以及你认为可以公开使用的依据。</p>
+
+            <ol class="process-list">
+              <li><b>1</b><span><strong>提交资料</strong><small>歌词、歌曲、创作者与来源</small></span></li>
+              <li><b>2</b><span><strong>人工审核</strong><small>核对文本、归属和版权状态</small></span></li>
+              <li><b>3</b><span><strong>进入 API</strong><small>通过后获得稳定的公开 ID</small></span></li>
+            </ol>
+          </div>
+
+          <form class="submission-form" id="submission-form" novalidate>
+            <div class="form-topline"><span>新摘句投稿</span><small>* 必填</small></div>
+
+            <label class="field full">
+              <span>歌词摘录 *</span>
+              <textarea name="excerpt" rows="3" maxlength="280" required placeholder="只填写希望收录的短摘录，不要提交整首歌词"></textarea>
+              <small class="field-hint"><b id="excerpt-count">0</b>/280 · 建议只摘最必要的一句</small>
+            </label>
+
+            <div class="field-row">
+              <label class="field">
+                <span>歌曲名称 *</span>
+                <input name="songTitle" required placeholder="例如：送别" />
+              </label>
+              <label class="field">
+                <span>语言 *</span>
+                <select name="language" required>
+                  <option value="zh-CN">中文</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field">
+                <span>创作者 *</span>
+                <input name="creatorName" required placeholder="词作者；传统作品可填传统民歌" />
+              </label>
+              <label class="field">
+                <span>创作者角色</span>
+                <input name="creatorRole" placeholder="例如：作词" value="作词" />
+              </label>
+            </div>
+
+            <label class="field full">
+              <span>可核对的来源链接 *</span>
+              <input name="sourceUrl" type="url" required placeholder="https://…" />
+            </label>
+
+            <div class="field-row">
+              <label class="field">
+                <span>版权依据 *</span>
+                <select name="rightsBasis" required>
+                  <option value="">请选择</option>
+                  <option value="public_domain">公开领域 / 公版</option>
+                  <option value="permission">已获权利人许可</option>
+                  <option value="licensed">已有内容授权</option>
+                  <option value="quotation_review">短摘录，申请个案审核</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>主题标签</span>
+                <input name="themes" placeholder="离别, 故人, 时间" />
+              </label>
+            </div>
+
+            <label class="field full">
+              <span>版权说明 *</span>
+              <textarea name="rightsNote" rows="2" required placeholder="例如：作者逝世年份、授权范围，或为什么该短摘录可以被审核"></textarea>
+            </label>
+
+            <label class="field full">
+              <span>为什么值得记住？</span>
+              <textarea name="curatorNote" rows="2" placeholder="写下你的理解，它会帮助编辑判断这句歌词的价值"></textarea>
+            </label>
+
+            <div class="field-row">
+              <label class="field">
+                <span>投稿人 *</span>
+                <input name="submitterName" required placeholder="姓名或昵称" />
+              </label>
+              <label class="field">
+                <span>联系方式</span>
+                <input name="submitterContact" placeholder="邮箱（不会公开）" />
+              </label>
+            </div>
+
+            <label class="check-field">
+              <input type="checkbox" name="rightsConfirmed" required />
+              <span>我确认有权提交以上内容，并理解投稿会先进入人工审核。</span>
+            </label>
+
+            <div class="form-actions">
+              <p id="submission-status" role="status"></p>
+              <button class="primary-button" type="submit">提交审核 <span>→</span></button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="view inner-view" data-view="review" aria-labelledby="review-title" hidden>
+        <div class="review-heading">
+          <div>
+            <p class="eyebrow"><span></span> EDITORIAL DESK</p>
+            <h1 id="review-title">审核台</h1>
+            <p>只有通过来源、版权和文本核对的摘句，才会进入公开 API。</p>
+          </div>
+          <div class="review-auth">
+            <label for="review-token">审核口令</label>
+            <div>
+              <input id="review-token" type="password" placeholder="Bearer Token" autocomplete="off" />
+              <button id="load-review">载入待审</button>
+            </div>
+            <small id="demo-token-note"></small>
+          </div>
+        </div>
+
+        <div class="source-browser">
+          <div class="source-browser-copy">
+            <p class="section-kicker">LIVE LYRIC SOURCES</p>
+            <h2>真实曲库搜索</h2>
+            <p>从外部曲库读取实际歌词，选中的短句只会进入待审队列，不会直接公开。</p>
+          </div>
+          <form class="source-search" id="source-search-form">
+            <label>
+              <span>曲库</span>
+              <select id="source-provider" name="provider">
+                <option value="lrclib">LRCLIB · 免密钥</option>
+                <option value="publicdomain">Public Domain · 免注册</option>
+                <option value="jamendo">Jamendo · CC 授权</option>
+              </select>
+            </label>
+            <label class="source-query-field">
+              <span>歌曲、歌手或歌词片段</span>
+              <input id="source-query" name="q" placeholder="例如：送别 / Amazing Grace" />
+            </label>
+            <button type="submit">搜索曲库</button>
+          </form>
+          <p class="source-provider-note" id="source-provider-note">LRCLIB 无需密钥，但歌词权利需要逐首核对。</p>
+        </div>
+
+        <div class="source-results" id="source-results" aria-live="polite"></div>
+
+        <section class="local-library" aria-labelledby="local-library-title">
+          <div class="local-library-heading">
+            <div>
+              <p class="section-kicker">LOCAL SQLITE LIBRARY</p>
+              <h2 id="local-library-title">本地候选库</h2>
+              <p>整首歌词保存在本机 SQLite；系统先分词、去重和评分，再由你逐条批准。</p>
+            </div>
+            <div class="local-library-stats">
+              <span><strong id="local-track-count">—</strong> 首有待选歌曲</span>
+              <span><strong id="local-candidate-count">—</strong> 条待选</span>
+              <button id="refresh-local-library" type="button">刷新</button>
+            </div>
+          </div>
+          <details class="manual-upload">
+            <summary>人工上传整首歌词</summary>
+            <form id="manual-upload-form">
+              <div class="manual-upload-grid">
+                <label class="field">
+                  <span>歌曲名称 *</span>
+                  <input name="trackName" required placeholder="歌曲名" />
+                </label>
+                <label class="field">
+                  <span>歌手 / 版本</span>
+                  <input name="artistName" placeholder="用于区分歌词版本" />
+                </label>
+                <label class="field">
+                  <span>语言</span>
+                  <select name="language">
+                    <option value="">自动识别</option>
+                    <option value="zh-CN">中文</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>核对来源 URL *</span>
+                  <input name="sourceUrl" type="url" required placeholder="https://…" />
+                </label>
+              </div>
+              <label class="field full">
+                <span>整首纯文本歌词 *</span>
+                <textarea name="plainLyrics" rows="8" required placeholder="每句一行；上传后只保存在本地候选库，不会直接公开。"></textarea>
+              </label>
+              <div class="manual-upload-actions">
+                <p id="manual-upload-status" role="status"></p>
+                <button type="submit">保存并本地分析</button>
+              </div>
+            </form>
+          </details>
+          <div class="local-track-list" id="local-track-list">
+            <div class="source-results-status">从上方曲库搜索一首歌，然后选择“下载整首到本地分析”。</div>
+          </div>
+        </section>
+
+        <div class="review-summary">
+          <span>待审记录</span>
+          <strong id="pending-count">—</strong>
+          <p>审核通过会立即生成公开条目；驳回必须写明原因。</p>
+        </div>
+
+        <div class="review-list" id="review-list">
+          <div class="review-placeholder">
+            <span>⌁</span>
+            <h3>输入审核口令后载入队列</h3>
+            <p>开发环境可使用页面提示的演示口令。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div><span class="brand-mark small" aria-hidden="true">句</span><p>摘句 · Lyric Lines<br /><small>一句一条，先审后发。</small></p></div>
+      <p>Made for words that stay.</p>
+      <nav aria-label="页脚导航"><button data-nav="api">API</button><button data-nav="submit">投稿规则</button><a href="/api/health" target="_blank">服务状态</a></nav>
+    </footer>
+
+    <dialog class="quote-dialog" id="quote-dialog">
+      <button class="dialog-close" id="dialog-close" aria-label="关闭">×</button>
+      <div id="dialog-content"></div>
+    </dialog>
+
+    <dialog class="candidate-dialog" id="candidate-dialog">
+      <button class="dialog-close" id="candidate-dialog-close" aria-label="关闭候选导入">×</button>
+      <form id="candidate-form" class="candidate-form">
+        <div class="candidate-heading">
+          <p class="section-kicker">IMPORT A REAL LINE</p>
+          <h2 id="candidate-dialog-title">加入待审队列</h2>
+          <p id="candidate-track-meta"></p>
+        </div>
+
+        <label class="field full">
+          <span>选中的歌词 *</span>
+          <textarea name="excerpt" rows="2" readonly></textarea>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>词作者 / 创作者 *</span>
+            <input name="creatorName" required placeholder="请查证后填写，不能只依赖表演者" />
+          </label>
+          <label class="field">
+            <span>角色 *</span>
+            <input name="creatorRole" required value="作词 / 创作者" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>语言 *</span>
+            <select name="language">
+              <option value="zh-CN">中文</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>版权依据 *</span>
+            <select name="rightsBasis">
+              <option value="quotation_review">短摘录，个案审核</option>
+              <option value="public_domain">公开领域 / 公版</option>
+              <option value="permission">已获权利人许可</option>
+              <option value="licensed">已有内容授权</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field full">
+          <span>版权说明 *</span>
+          <textarea name="rightsNote" rows="2" required placeholder="说明公版年份、许可链接、授权范围或个案引用理由"></textarea>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>主题标签</span>
+            <input name="themes" placeholder="希望, 远行, 故人" />
+          </label>
+          <label class="field">
+            <span>策展说明</span>
+            <input name="curatorNote" placeholder="为什么这一句值得记住？" />
+          </label>
+        </div>
+
+        <label class="check-field">
+          <input type="checkbox" name="rightsConfirmed" required />
+          <span id="candidate-confirm-copy">我已核对创作者和使用依据，同意先进入待审队列。</span>
+        </label>
+
+        <div class="form-actions">
+          <p id="candidate-status" role="status"></p>
+          <button class="primary-button" id="candidate-submit" type="submit">加入待审 <span>→</span></button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/app.js?v=20260715d"></script>
+  </body>
+</html>
