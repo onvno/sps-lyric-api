@@ -15,6 +15,7 @@ async function withServer(run, serverOptions = {}) {
     dbPath,
     seedPath: join(ROOT, 'data', 'store.json'),
     publicDir: join(ROOT, 'public'),
+    adminMode: true,
     reviewerToken: 'test-review-token',
     ...serverOptions
   });
@@ -66,108 +67,91 @@ test('search, random and song aggregation return curated records', async () => {
   });
 });
 
-test('submission validation requires a rights declaration', async () => {
+test('default mode only exposes the read API and hides maintenance routes', async () => {
   await withServer(async ({ base }) => {
-    const response = await fetch(`${base}/api/v1/submissions`, {
+    const page = await fetch(base);
+    const pageHtml = await page.text();
+    assert.match(pageHtml, /data-admin-only hidden/);
+
+    const config = await fetch(`${base}/api/v1/config`);
+    const configPayload = await config.json();
+    assert.equal(configPayload.adminMode, false);
+    assert.equal('demoReviewToken' in configPayload, false);
+    assert.equal(configPayload.githubIssuesUrl, 'https://github.com/example/sps-lyric-api/issues/new/choose');
+
+    const retiredSubmission = await fetch(`${base}/api/v1/submissions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ excerpt: '一条没有来源的摘录' })
+      body: JSON.stringify({})
     });
-    assert.equal(response.status, 422);
-    const payload = await response.json();
-    assert.equal(payload.error.code, 'validation_failed');
-    assert.ok(payload.error.details.some((detail) => detail.field === 'rightsConfirmed'));
+    assert.equal(retiredSubmission.status, 410);
+    assert.equal((await retiredSubmission.json()).error.details.githubIssuesUrl, 'https://github.com/example/sps-lyric-api/issues/new/choose');
+
+    const review = await fetch(`${base}/api/v1/review/submissions`);
+    const admin = await fetch(`${base}/api/v1/admin/entries`, { method: 'POST' });
+    assert.equal(review.status, 404);
+    assert.equal(admin.status, 404);
+
+    const openApi = await fetch(`${base}/api/v1/openapi.json`);
+    const openApiPayload = await openApi.json();
+    assert.equal('/admin/entries' in openApiPayload.paths, false);
+    assert.equal('/review/local/tracks' in openApiPayload.paths, false);
+  }, {
+    adminMode: false,
+    reviewerToken: '',
+    githubIssuesUrl: 'https://github.com/example/sps-lyric-api/issues/new/choose'
   });
 });
 
-test('a valid submission stays private until an authorized approval', async () => {
+test('administrators can publish a multiline excerpt directly with minimal fields', async () => {
   await withServer(async ({ base }) => {
-    const input = {
-      excerpt: '一条用于自动化测试的原创短句。\n下一行完成这个意思。',
-      language: 'zh-CN',
-      songTitle: '测试之歌',
-      creators: [{ name: '测试作者', role: '作词' }],
-      sourceUrl: 'https://example.com/original-work',
-      rightsBasis: 'permission',
-      rightsNote: '自动化测试作者允许本站收录。',
-      rightsConfirmed: true,
-      submitterName: '测试投稿人',
-      themes: ['测试']
-    };
-    const submitted = await fetch(`${base}/api/v1/submissions`, {
+    const unauthorized = await fetch(`${base}/api/v1/admin/entries`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(input)
+      body: JSON.stringify({})
     });
-    assert.equal(submitted.status, 201);
-    const submittedPayload = await submitted.json();
-    const id = submittedPayload.data.id;
-
-    const publicBefore = await fetch(`${base}/api/v1/entries?q=${encodeURIComponent('自动化测试')}`);
-    assert.equal((await publicBefore.json()).pagination.total, 0);
-
-    const unauthorized = await fetch(`${base}/api/v1/review/submissions`);
     assert.equal(unauthorized.status, 401);
 
-    const queue = await fetch(`${base}/api/v1/review/submissions`, {
-      headers: { authorization: 'Bearer test-review-token' }
-    });
-    assert.equal(queue.status, 200);
-    assert.equal((await queue.json()).pagination.total, 1);
-
-    const approved = await fetch(`${base}/api/v1/review/submissions/${id}`, {
-      method: 'PATCH',
-      headers: {
-        authorization: 'Bearer test-review-token',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({ action: 'approve', reviewNote: '测试通过' })
-    });
-    assert.equal(approved.status, 200);
-
-    const publicAfter = await fetch(`${base}/api/v1/entries?q=${encodeURIComponent('自动化测试')}`);
-    const publicPayload = await publicAfter.json();
-    assert.equal(publicPayload.pagination.total, 1);
-    assert.equal(publicPayload.data[0].excerpt, input.excerpt);
-  });
-});
-
-test('reject requires a note and keeps the submission unpublished', async () => {
-  await withServer(async ({ base }) => {
-    const input = {
-      excerpt: 'Reject fixture',
-      language: 'en',
-      songTitle: 'Review Fixture',
-      creators: [{ name: 'Test Author', role: 'Lyrics' }],
-      sourceUrl: 'https://example.com/review-fixture',
-      rightsBasis: 'quotation_review',
-      rightsNote: 'Requires individual review.',
-      rightsConfirmed: true,
-      submitterName: 'Tester'
-    };
-    const submitted = await fetch(`${base}/api/v1/submissions`, {
+    const invalid = await fetch(`${base}/api/v1/admin/entries`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(input)
-    });
-    const id = (await submitted.json()).data.id;
-
-    const missingNote = await fetch(`${base}/api/v1/review/submissions/${id}`, {
-      method: 'PATCH',
       headers: { authorization: 'Bearer test-review-token', 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'reject' })
+      body: JSON.stringify({ excerpt: '只有一行', songTitle: '测试之歌', performerName: '测试演唱者' })
     });
-    assert.equal(missingNote.status, 422);
+    assert.equal(invalid.status, 422);
 
-    const rejected = await fetch(`${base}/api/v1/review/submissions/${id}`, {
-      method: 'PATCH',
+    const published = await fetch(`${base}/api/v1/admin/entries`, {
+      method: 'POST',
       headers: { authorization: 'Bearer test-review-token', 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', reviewNote: '来源不足' })
+      body: JSON.stringify({
+        excerpt: '第一行测试歌词。\r\n第二行测试歌词。',
+        songTitle: '管理员直发测试',
+        performerName: '测试演唱者',
+        lyricistName: '测试作词人'
+      })
     });
-    assert.equal(rejected.status, 200);
+    assert.equal(published.status, 201);
+    const publishedPayload = await published.json();
+    assert.equal(publishedPayload.data.excerpt, '第一行测试歌词。\n第二行测试歌词。');
+    assert.equal(publishedPayload.data.language, 'zh-CN');
+    assert.equal(publishedPayload.data.rights.basis, 'personal_use');
+    assert.deepEqual(publishedPayload.data.creators, [
+      { name: '测试作词人', role: '作词' },
+      { name: '测试演唱者', role: '演唱' }
+    ]);
 
-    const publicEntries = await fetch(`${base}/api/v1/entries?q=${encodeURIComponent('Reject fixture')}`);
-    assert.equal((await publicEntries.json()).pagination.total, 0);
+    const publicEntries = await fetch(`${base}/api/v1/entries?q=${encodeURIComponent('第一行测试歌词')}`);
+    assert.equal((await publicEntries.json()).pagination.total, 1);
+
+    const duplicate = await fetch(`${base}/api/v1/admin/entries`, {
+      method: 'POST',
+      headers: { authorization: 'Bearer test-review-token', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        excerpt: '第一行测试歌词。\n第二行测试歌词。',
+        songTitle: '管理员直发测试',
+        performerName: '另一位演唱者'
+      })
+    });
+    assert.equal(duplicate.status, 409);
   });
 });
 

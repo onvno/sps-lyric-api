@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="摘句：人工策展、可搜索和投稿审核的中英文经典歌词 API。" />
+    <meta name="description" content="摘句：人工策展、可搜索的中英文经典歌词摘句 API。" />
     <meta name="theme-color" content="#f3efe4" />
     <title>摘句 · SPS Lyric API</title>
-    <link rel="stylesheet" href="/styles.css?v=20260715d" />
+    <link rel="stylesheet" href="/styles.css?v=20260719-admin" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -23,12 +23,12 @@
       <nav class="main-nav" aria-label="主导航">
         <button class="nav-link is-active" data-nav="discover">发现</button>
         <button class="nav-link" data-nav="api">API</button>
-        <button class="nav-link" data-nav="submit">投稿</button>
-        <button class="nav-link" data-nav="review">审核</button>
+        <button class="nav-link" data-nav="submit" data-admin-only hidden>录入</button>
+        <button class="nav-link" data-nav="review" data-admin-only hidden>审核</button>
       </nav>
 
-      <button class="header-cta" data-nav="submit">
-        <span>投一句</span>
+      <button class="header-cta" data-nav="submit" data-admin-only hidden>
+        <span>录入摘句</span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5" /></svg>
       </button>
     </header>
@@ -95,17 +95,17 @@
           <div class="empty-state" id="empty-state" hidden>
             <span>〽</span>
             <h3>还没有找到这一句</h3>
-            <p>换个关键词，或把它作为新摘句投稿给我们。</p>
-            <button data-nav="submit">去投稿</button>
+            <p>换个关键词，或从项目主页反馈你想收录的歌曲。</p>
+            <a id="github-issues-link" href="#" target="_blank" rel="noreferrer" hidden>前往 GitHub Issues</a>
           </div>
         </div>
 
         <div class="rights-ribbon">
           <div>
             <span class="rights-icon" aria-hidden="true">©</span>
-            <p><strong>尊重创作，也认真保存。</strong> 首批内容来自公开领域作品；每条新投稿都要经过来源与版权审核。</p>
+            <p><strong>尊重创作，也认真保存。</strong> 公开接口只提供已收录的短摘录；内容维护和数据导入由管理员在本地完成。</p>
           </div>
-          <button data-nav="submit">了解投稿规则 <span>→</span></button>
+          <a href="/api/v1/openapi.json" target="_blank" rel="noreferrer">查看 API 文档 <span>→</span></a>
         </div>
       </section>
 
@@ -138,10 +138,10 @@
               <code>/songs</code>
               <small>歌曲聚合</small>
             </button>
-            <button class="endpoint" data-endpoint="submit">
+            <button class="endpoint" data-endpoint="admin-entry" data-admin-only hidden>
               <span class="method post">POST</span>
-              <code>/submissions</code>
-              <small>提交候选</small>
+              <code>/admin/entries</code>
+              <small>管理员直发</small>
             </button>
           </div>
 
@@ -168,35 +168,35 @@
           </article>
           <article>
             <span>03</span>
-            <h3>先审后发</h3>
-            <p>投稿进入待审队列，公开读取接口只返回审核通过的内容。</p>
+            <h3>默认只读</h3>
+            <p>普通启动只展示公开数据；维护入口需显式启用管理员模式。</p>
           </article>
         </div>
 
         <p class="openapi-link">需要机器可读文档？<a href="/api/v1/openapi.json" target="_blank" rel="noreferrer">打开 OpenAPI 3.1 JSON ↗</a></p>
       </section>
 
-      <section class="view inner-view" data-view="submit" aria-labelledby="submit-title" hidden>
+      <section class="view inner-view" data-view="submit" data-admin-only aria-labelledby="submit-title" hidden>
         <div class="form-page-grid">
           <div class="form-intro">
-            <p class="eyebrow"><span></span> CONTRIBUTE A LINE</p>
-            <h1 id="submit-title">把你记住的那一句，<br /><em>交给更多人。</em></h1>
-            <p>我们收短摘录，不收整首歌词。请同时提供创作者、来源链接，以及你认为可以公开使用的依据。</p>
+            <p class="eyebrow"><span></span> ADMIN DIRECT PUBLISH</p>
+            <h1 id="submit-title">录入一段摘句，<br /><em>立即写入本地库。</em></h1>
+            <p>此入口仅在管理员模式显示。只需歌曲名、歌词摘录、演唱者和可选作词人；版权信息按个人非商业使用的本地默认值保存。</p>
 
             <ol class="process-list">
-              <li><b>1</b><span><strong>提交资料</strong><small>歌词、歌曲、创作者与来源</small></span></li>
-              <li><b>2</b><span><strong>人工审核</strong><small>核对文本、归属和版权状态</small></span></li>
-              <li><b>3</b><span><strong>进入 API</strong><small>通过后获得稳定的公开 ID</small></span></li>
+              <li><b>1</b><span><strong>录入内容</strong><small>填写歌曲、摘录和演唱者</small></span></li>
+              <li><b>2</b><span><strong>保留换行</strong><small>一行歌词对应一行输入</small></span></li>
+              <li><b>3</b><span><strong>直接发布</strong><small>立即进入公开读取接口</small></span></li>
             </ol>
           </div>
 
           <form class="submission-form" id="submission-form" novalidate>
-            <div class="form-topline"><span>新摘句投稿</span><small>* 必填</small></div>
+            <div class="form-topline"><span>管理员直发</span><small>* 必填</small></div>
 
             <label class="field full">
               <span>歌词摘录 *</span>
-              <textarea name="excerpt" rows="3" maxlength="280" required placeholder="只填写希望收录的短摘录，不要提交整首歌词"></textarea>
-              <small class="field-hint"><b id="excerpt-count">0</b>/280 · 建议只摘最必要的一句</small>
+              <textarea name="excerpt" rows="4" maxlength="280" required placeholder="一行原始歌词\n一行原始歌词"></textarea>
+              <small class="field-hint"><b id="excerpt-count">0</b>/280 · 保留 2–4 行真实换行，不要用空格替代换行</small>
             </label>
 
             <div class="field-row">
@@ -205,82 +205,30 @@
                 <input name="songTitle" required placeholder="例如：送别" />
               </label>
               <label class="field">
-                <span>语言 *</span>
-                <select name="language" required>
-                  <option value="zh-CN">中文</option>
-                  <option value="en">English</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="field-row">
-              <label class="field">
-                <span>创作者 *</span>
-                <input name="creatorName" required placeholder="词作者；传统作品可填传统民歌" />
-              </label>
-              <label class="field">
-                <span>创作者角色</span>
-                <input name="creatorRole" placeholder="例如：作词" value="作词" />
+                <span>演唱者 *</span>
+                <input name="performerName" required placeholder="例如：朴树" />
               </label>
             </div>
 
             <label class="field full">
-              <span>可核对的来源链接 *</span>
-              <input name="sourceUrl" type="url" required placeholder="https://…" />
-            </label>
-
-            <div class="field-row">
-              <label class="field">
-                <span>版权依据 *</span>
-                <select name="rightsBasis" required>
-                  <option value="">请选择</option>
-                  <option value="public_domain">公开领域 / 公版</option>
-                  <option value="permission">已获权利人许可</option>
-                  <option value="licensed">已有内容授权</option>
-                  <option value="quotation_review">短摘录，申请个案审核</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>主题标签</span>
-                <input name="themes" placeholder="离别, 故人, 时间" />
-              </label>
-            </div>
-
-            <label class="field full">
-              <span>版权说明 *</span>
-              <textarea name="rightsNote" rows="2" required placeholder="例如：作者逝世年份、授权范围，或为什么该短摘录可以被审核"></textarea>
+              <span>作词人（可选）</span>
+              <input name="lyricistName" placeholder="不知道时可留空" />
             </label>
 
             <label class="field full">
-              <span>为什么值得记住？</span>
-              <textarea name="curatorNote" rows="2" placeholder="写下你的理解，它会帮助编辑判断这句歌词的价值"></textarea>
-            </label>
-
-            <div class="field-row">
-              <label class="field">
-                <span>投稿人 *</span>
-                <input name="submitterName" required placeholder="姓名或昵称" />
-              </label>
-              <label class="field">
-                <span>联系方式</span>
-                <input name="submitterContact" placeholder="邮箱（不会公开）" />
-              </label>
-            </div>
-
-            <label class="check-field">
-              <input type="checkbox" name="rightsConfirmed" required />
-              <span>我确认有权提交以上内容，并理解投稿会先进入人工审核。</span>
+              <span>管理员口令 *</span>
+              <input name="adminToken" type="password" required autocomplete="off" placeholder="仅用于本次请求，不会写入数据库" />
             </label>
 
             <div class="form-actions">
               <p id="submission-status" role="status"></p>
-              <button class="primary-button" type="submit">提交审核 <span>→</span></button>
+              <button class="primary-button" type="submit">直接发布 <span>→</span></button>
             </div>
           </form>
         </div>
       </section>
 
-      <section class="view inner-view" data-view="review" aria-labelledby="review-title" hidden>
+      <section class="view inner-view" data-view="review" data-admin-only aria-labelledby="review-title" hidden>
         <div class="review-heading">
           <div>
             <p class="eyebrow"><span></span> EDITORIAL DESK</p>
@@ -293,7 +241,7 @@
               <input id="review-token" type="password" placeholder="Bearer Token" autocomplete="off" />
               <button id="load-review">载入待审</button>
             </div>
-            <small id="demo-token-note"></small>
+            <small id="demo-token-note">审核口令不会在前台公开。</small>
           </div>
         </div>
 
@@ -386,16 +334,16 @@
           <div class="review-placeholder">
             <span>⌁</span>
             <h3>输入审核口令后载入队列</h3>
-            <p>开发环境可使用页面提示的演示口令。</p>
+            <p>审核口令仅由管理员在本地设置。</p>
           </div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div><span class="brand-mark small" aria-hidden="true">句</span><p>摘句 · SPS Lyric API<br /><small>一句一条，先审后发。</small></p></div>
+      <div><span class="brand-mark small" aria-hidden="true">句</span><p>摘句 · SPS Lyric API<br /><small>一句一条，默认只读。</small></p></div>
       <p>Made for words that stay.</p>
-      <nav aria-label="页脚导航"><button data-nav="api">API</button><button data-nav="submit">投稿规则</button><a href="/api/health" target="_blank">服务状态</a></nav>
+      <nav aria-label="页脚导航"><button data-nav="api">API</button><button data-nav="submit" data-admin-only hidden>管理员</button><a href="/api/health" target="_blank">服务状态</a></nav>
     </footer>
 
     <dialog class="quote-dialog" id="quote-dialog">
@@ -477,6 +425,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="/app.js?v=20260715d"></script>
+    <script type="module" src="/app.js?v=20260719-admin"></script>
   </body>
 </html>

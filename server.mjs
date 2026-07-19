@@ -26,7 +26,7 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-const RIGHTS_BASES = new Set(['public_domain', 'licensed', 'permission', 'quotation_review']);
+const RIGHTS_BASES = new Set(['public_domain', 'licensed', 'permission', 'quotation_review', 'personal_use']);
 const LANGUAGES = new Set(['zh-CN', 'en']);
 
 function sendJson(res, status, payload, extraHeaders = {}) {
@@ -82,6 +82,14 @@ function cleanExcerpt(value, maxLength = 280) {
     .join('\n')
     .slice(0, maxLength)
     .trim();
+}
+
+function environmentFlag(value) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLocaleLowerCase());
+}
+
+function detectLanguage(value) {
+  return /[\u3400-\u9FFF]/u.test(value) ? 'zh-CN' : 'en';
 }
 
 function excerptKey(value) {
@@ -228,6 +236,23 @@ function submissionValidation(body) {
   return { normalized, errors };
 }
 
+function adminEntryValidation(body) {
+  const normalized = {
+    excerpt: cleanExcerpt(body.excerpt, 280),
+    songTitle: cleanText(body.songTitle, 140),
+    performerName: cleanText(body.performerName, 100),
+    lyricistName: cleanText(body.lyricistName, 100)
+  };
+  const lines = normalized.excerpt ? normalized.excerpt.split('\n') : [];
+  const errors = [];
+  if (lines.length < 2 || lines.length > 4) {
+    errors.push({ field: 'excerpt', message: '摘录请保留 2 到 4 行原始歌词，并以真实换行分隔' });
+  }
+  if (!normalized.songTitle) errors.push({ field: 'songTitle', message: '请填写歌曲名称' });
+  if (!normalized.performerName) errors.push({ field: 'performerName', message: '请填写演唱者' });
+  return { normalized, errors };
+}
+
 function entryFromSubmission(submission, edits = {}) {
   const songId = cleanText(edits.songId, 100) || `song_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
   const excerpt = cleanExcerpt(edits.excerpt, 280) || submission.excerpt;
@@ -260,13 +285,48 @@ function entryFromSubmission(submission, edits = {}) {
   };
 }
 
-function buildOpenApi(origin) {
+function entryFromAdminInput(input, { songId, sourceUrl }) {
+  const now = new Date().toISOString();
+  const creators = [];
+  if (input.lyricistName) creators.push({ name: input.lyricistName, role: '作词' });
+  if (!creators.some((creator) => creator.name.toLocaleLowerCase() === input.performerName.toLocaleLowerCase())) {
+    creators.push({ name: input.performerName, role: '演唱' });
+  } else {
+    creators[0].role = '作词 / 演唱';
+  }
   return {
+    id: `line_${randomUUID().replaceAll('-', '').slice(0, 12)}`,
+    excerpt: input.excerpt,
+    language: detectLanguage(input.excerpt),
+    song: {
+      id: songId || `song_${randomUUID().replaceAll('-', '').slice(0, 12)}`,
+      title: input.songTitle
+    },
+    creators,
+    themes: [],
+    curatorNote: '管理员直接录入。',
+    source: {
+      url: sourceUrl,
+      label: '管理员直接录入',
+      accessedAt: now.slice(0, 10)
+    },
+    rights: {
+      basis: 'personal_use',
+      jurisdiction: '个人非商业使用',
+      note: '管理员本地录入；仅供个人非商业使用。'
+    },
+    status: 'published',
+    createdAt: now
+  };
+}
+
+function buildOpenApi(origin, adminMode = false) {
+  const document = {
     openapi: '3.1.0',
     info: {
       title: '摘句 SPS Lyric API',
       version: '1.1.0',
-      description: '人工策展的中英文经典歌词短摘录 API，支持 SQLite 本地曲库、整首下载、本地分词和人工审核。'
+      description: '人工策展的中英文经典歌词短摘录 API。默认仅公开读取；管理员可在本地启用曲库导入、分词与审核。'
     },
     servers: [{ url: `${origin}/api/v1` }],
     paths: {
@@ -292,11 +352,12 @@ function buildOpenApi(origin) {
       },
       '/songs': { get: { summary: '按歌曲聚合摘句', responses: { 200: { description: '歌曲列表' } } } },
       '/random': { get: { summary: '随机获取一条摘句', responses: { 200: { description: '随机摘句' } } } },
-      '/submissions': {
+      '/admin/entries': {
         post: {
-          summary: '提交候选摘句',
-          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/SubmissionInput' } } } },
-          responses: { 201: { description: '已进入待审队列' }, 422: { description: '字段校验失败' } }
+          summary: '管理员直接发布摘句',
+          security: [{ reviewerBearer: [] }],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/AdminEntryInput' } } } },
+          responses: { 201: { description: '已立即发布' }, 401: { description: '管理员口令无效' }, 422: { description: '字段校验失败' } }
         }
       },
       '/review/sources/search': {
@@ -371,24 +432,28 @@ function buildOpenApi(origin) {
           required: ['name', 'role'],
           properties: { name: { type: 'string' }, role: { type: 'string' } }
         },
-        SubmissionInput: {
+        AdminEntryInput: {
           type: 'object',
-          required: ['excerpt', 'language', 'songTitle', 'creators', 'sourceUrl', 'rightsBasis', 'rightsNote', 'rightsConfirmed', 'submitterName'],
+          required: ['excerpt', 'songTitle', 'performerName'],
           properties: {
-            excerpt: { type: 'string', maxLength: 280 },
-            language: { type: 'string', enum: ['zh-CN', 'en'] },
+            excerpt: { type: 'string', maxLength: 280, description: '保留 2 到 4 行原始歌词，使用换行分隔。' },
             songTitle: { type: 'string' },
-            creators: { type: 'array', items: { $ref: '#/components/schemas/Creator' } },
-            sourceUrl: { type: 'string', format: 'uri' },
-            rightsBasis: { type: 'string', enum: [...RIGHTS_BASES] },
-            rightsNote: { type: 'string' },
-            rightsConfirmed: { type: 'boolean', const: true },
-            submitterName: { type: 'string' }
+            performerName: { type: 'string' },
+            lyricistName: { type: 'string', description: '可选' }
           }
         }
       }
     }
   };
+
+  if (!adminMode) {
+    for (const path of Object.keys(document.paths)) {
+      if (path.startsWith('/admin/') || path.startsWith('/review/')) delete document.paths[path];
+    }
+    delete document.components.securitySchemes;
+    delete document.components.schemas.AdminEntryInput;
+  }
+  return document;
 }
 
 async function serveStatic(res, publicDir, pathname) {
@@ -419,11 +484,15 @@ export async function createLyricServer(options = {}) {
   const dbPath = options.dbPath || process.env.LYRICS_DB_PATH || DEFAULT_DB_PATH;
   const seedPath = options.seedPath === undefined ? DEFAULT_SEED_PATH : options.seedPath;
   const publicDir = options.publicDir || DEFAULT_PUBLIC_DIR;
-  const reviewerToken = options.reviewerToken ?? process.env.REVIEWER_TOKEN ?? 'demo-review-token';
+  const adminMode = options.adminMode ?? environmentFlag(process.env.ADMIN_MODE);
+  const reviewerToken = options.reviewerToken ?? process.env.REVIEWER_TOKEN ?? '';
   const publicBaseUrl = cleanUrl(options.publicBaseUrl ?? process.env.PUBLIC_BASE_URL);
+  const githubIssuesUrl = cleanUrl(options.githubIssuesUrl ?? process.env.GITHUB_ISSUES_URL);
   const externalFetch = options.externalFetch || globalThis.fetch;
   const jamendoClientId = options.jamendoClientId ?? process.env.JAMENDO_CLIENT_ID ?? '';
-  const demoMode = reviewerToken === 'demo-review-token';
+  if (adminMode && !reviewerToken) {
+    throw new Error('管理员模式需要设置 REVIEWER_TOKEN');
+  }
   let writeQueue = Promise.resolve();
   let databaseClosed = false;
 
@@ -628,6 +697,7 @@ export async function createLyricServer(options = {}) {
           ok: true,
           service: 'sps-lyric-api',
           storage: 'sqlite',
+          adminMode,
           database: database.stats(),
           time: new Date().toISOString()
         });
@@ -636,8 +706,8 @@ export async function createLyricServer(options = {}) {
 
       if (pathname === '/api/v1/config' && req.method === 'GET') {
         sendJson(res, 200, {
-          demoMode,
-          ...(demoMode ? { demoReviewToken: reviewerToken } : {}),
+          adminMode,
+          ...(githubIssuesUrl ? { githubIssuesUrl } : {}),
           storage: { engine: 'sqlite', local: true },
           providers: {
             lrclib: { enabled: true, access: 'review_only', rights: 'item_review_required' },
@@ -650,7 +720,7 @@ export async function createLyricServer(options = {}) {
       }
 
       if (pathname === '/api/v1/openapi.json' && req.method === 'GET') {
-        sendJson(res, 200, buildOpenApi(origin));
+        sendJson(res, 200, buildOpenApi(origin, adminMode));
         return;
       }
 
@@ -693,24 +763,53 @@ export async function createLyricServer(options = {}) {
       }
 
       if (pathname === '/api/v1/submissions' && req.method === 'POST') {
-        const body = await readJsonBody(req);
-        const { normalized, errors } = submissionValidation(body);
-        if (errors.length) {
-          apiError(res, 422, 'validation_failed', '投稿信息不完整', errors);
+        apiError(res, 410, 'contributions_moved', '网页投稿已关闭；请通过 GitHub Issues 提交建议。', {
+          ...(githubIssuesUrl ? { githubIssuesUrl } : {})
+        });
+        return;
+      }
+
+      if (pathname.startsWith('/api/v1/admin/') || pathname.startsWith('/api/v1/review/')) {
+        if (!adminMode) {
+          apiError(res, 404, 'admin_mode_disabled', '管理员模式未启用');
           return;
         }
-        const submission = {
-          id: `sub_${randomUUID().replaceAll('-', '').slice(0, 12)}`,
-          ...normalized,
-          status: 'pending',
-          submittedAt: new Date().toISOString()
-        };
-        await updateStore((store) => {
-          store.submissions.unshift(submission);
+      }
+
+      if (pathname === '/api/v1/admin/entries' && req.method === 'POST') {
+        if (!reviewerAuthorized(req, reviewerToken)) {
+          apiError(res, 401, 'reviewer_unauthorized', '管理员口令无效');
+          return;
+        }
+        const body = await readJsonBody(req);
+        const { normalized, errors } = adminEntryValidation(body);
+        if (errors.length) {
+          apiError(res, 422, 'validation_failed', '摘录信息不完整', errors);
+          return;
+        }
+        const result = await updateStore((store) => {
+          const existingSong = store.entries.find((item) =>
+            item.song.title.toLocaleLowerCase() === normalized.songTitle.toLocaleLowerCase()
+          );
+          const entry = entryFromAdminInput(normalized, {
+            songId: existingSong?.song.id,
+            sourceUrl: `${canonicalOrigin}/`
+          });
+          const duplicate = store.entries.some((item) =>
+            excerptKey(item.excerpt) === excerptKey(entry.excerpt)
+            && item.song.title.toLocaleLowerCase() === entry.song.title.toLocaleLowerCase()
+          );
+          if (duplicate) return { duplicate: true };
+          store.entries.unshift(entry);
+          return { entry };
         });
+        if (result.duplicate) {
+          apiError(res, 409, 'duplicate_entry', '同一歌曲下已有相同摘句');
+          return;
+        }
         sendJson(res, 201, {
-          data: { id: submission.id, status: submission.status, submittedAt: submission.submittedAt },
-          message: '投稿已进入人工审核队列，不会立即公开。'
+          data: result.entry,
+          message: '已直接发布到公开摘句库。'
         });
         return;
       }
@@ -1154,9 +1253,7 @@ async function main() {
   const server = await createLyricServer();
   server.listen(port, host, () => {
     console.log(`SPS Lyric API running at http://${host}:${port}`);
-    if (!process.env.REVIEWER_TOKEN) {
-      console.warn('Using demo reviewer token. Set REVIEWER_TOKEN before deployment.');
-    }
+    console.log(environmentFlag(process.env.ADMIN_MODE) ? '管理员模式已启用。' : '默认只读模式；设置 ADMIN_MODE=true 可启用管理员功能。');
   });
 }
 

@@ -228,15 +228,15 @@ a { color: inherit; }
 .empty-state span { color: var(--orange); font-size: 38px; }
 .empty-state h3 { font: 28px var(--serif); margin: 15px 0 7px; }
 .empty-state p { color: var(--ink-soft); }
-.empty-state button { margin-top: 12px; border: 1px solid var(--ink); background: transparent; padding: 10px 22px; cursor: pointer; }
+.empty-state button, .empty-state a { display: inline-block; margin-top: 12px; border: 1px solid var(--ink); color: var(--ink); background: transparent; padding: 10px 22px; text-decoration: none; }
 
 .rights-ribbon { max-width: 1160px; margin: 44px auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 40px; }
 .rights-ribbon > div { display: flex; gap: 18px; align-items: center; }
 .rights-icon { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--orange); border-radius: 50%; color: var(--orange); font: 20px var(--serif); flex: none; }
 .rights-ribbon p { color: var(--ink-soft); font-size: 12px; line-height: 1.8; }
 .rights-ribbon p strong { color: var(--ink); }
-.rights-ribbon button { border: 0; background: transparent; white-space: nowrap; cursor: pointer; font-size: 12px; }
-.rights-ribbon button span { color: var(--orange); margin-left: 8px; }
+.rights-ribbon button, .rights-ribbon a { border: 0; color: var(--ink); background: transparent; white-space: nowrap; cursor: pointer; font-size: 12px; text-decoration: none; }
+.rights-ribbon button span, .rights-ribbon a span { color: var(--orange); margin-left: 8px; }
 
 .inner-view { min-height: calc(100vh - 82px); padding: 66px clamp(24px, 8vw, 130px) 90px; }
 .page-heading { max-width: 920px; margin-bottom: 58px; }
@@ -492,7 +492,7 @@ a { color: inherit; }
   .quote-card:nth-child(n) { background: rgba(251,248,241,.74); }
   .quote-card:nth-child(even) { background: rgba(240,234,221,.7); }
   .rights-ribbon { align-items: flex-start; padding: 0 20px; }
-  .rights-ribbon > button { display: none; }
+  .rights-ribbon > button, .rights-ribbon > a { display: none; }
   .inner-view { padding: 47px 20px 70px; }
   .page-heading h1, .form-intro h1 { font-size: 39px; }
   .api-base span { display: none; }

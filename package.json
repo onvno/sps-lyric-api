@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Curated bilingual lyric excerpts API with submission and moderation.",
+  "description": "Curated bilingual lyric excerpts API with read-only public and optional local admin modes.",
   "engines": {
     "node": ">=22.5"
   },

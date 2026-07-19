@@ -1,0 +1,41 @@
+name: 歌词摘录建议
+description: 建议管理员收录一首歌或一段歌词摘录
+title: "[歌词建议] "
+labels: ["lyric-suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的建议。此 Issue 不会自动写入数据库；维护者会自行核对来源、署名和适用范围。
+  - type: input
+    id: song-title
+    attributes:
+      label: 歌曲名称
+      placeholder: 例如：送别
+    validations:
+      required: true
+  - type: textarea
+    id: excerpt
+    attributes:
+      label: 歌词摘录
+      description: 请保留原始换行，一行歌词写一行；建议 2–4 行，不要提交整首歌词。
+      placeholder: |
+        第一行歌词
+        第二行歌词
+    validations:
+      required: true
+  - type: input
+    id: performer
+    attributes:
+      label: 演唱者
+    validations:
+      required: true
+  - type: input
+    id: lyricist
+    attributes:
+      label: 作词人（可选）
+  - type: textarea
+    id: note
+    attributes:
+      label: 补充说明（可选）
+      description: 例如版本信息、你认为值得收录的原因或可供核对的来源。

@@ -3,6 +3,8 @@ const state = {
   language: '',
   query: '',
   currentView: 'discover',
+  adminMode: false,
+  githubIssuesUrl: '',
   reviewToken: '',
   sourceTracks: [],
   localTracks: [],
@@ -33,6 +35,7 @@ const elements = {
   reviewList: $('#review-list'),
   pendingCount: $('#pending-count'),
   demoTokenNote: $('#demo-token-note'),
+  githubIssuesLink: $('#github-issues-link'),
   sourceResults: $('#source-results'),
   sourceProvider: $('#source-provider'),
   sourceQuery: $('#source-query'),
@@ -78,21 +81,19 @@ data.forEach(song => {
   // song.entries 是这首歌的全部公开摘句
 });`
   },
-  submit: {
-    label: '提交候选摘句',
-    code: (base) => `await fetch('${base}/submissions', {
+  'admin-entry': {
+    label: '管理员直接发布',
+    code: (base) => `await fetch('${base}/admin/entries', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer YOUR_REVIEWER_TOKEN'
+  },
   body: JSON.stringify({
-    excerpt: '待审核的短摘录',
-    language: 'zh-CN',
+    excerpt: '第一行歌词\\n第二行歌词',
     songTitle: '歌曲名',
-    creators: [{ name: '创作者', role: '作词' }],
-    sourceUrl: 'https://example.com/source',
-    rightsBasis: 'permission',
-    rightsNote: '已取得书面授权',
-    rightsConfirmed: true,
-    submitterName: '投稿人'
+    performerName: '演唱者',
+    lyricistName: '作词人（可选）'
   })
 });`
   }
@@ -130,7 +131,8 @@ function rightsLabel(basis) {
     public_domain: '公版',
     licensed: '已授权',
     permission: '已许可',
-    quotation_review: '个案审核'
+    quotation_review: '个案审核',
+    personal_use: '个人使用'
   }[basis] || '已核对';
 }
 
@@ -272,7 +274,7 @@ function openEntry(entry) {
 }
 
 function showView(view, updateHash = true) {
-  const allowed = new Set(['discover', 'api', 'submit', 'review']);
+  const allowed = new Set(['discover', 'api', ...(state.adminMode ? ['submit', 'review'] : [])]);
   const next = allowed.has(view) ? view : 'discover';
   state.currentView = next;
   $$('.view').forEach((section) => {
@@ -299,42 +301,41 @@ async function submitQuote(event) {
   const form = event.currentTarget;
   const submitButton = $('button[type="submit"]', form);
   const data = new FormData(form);
+  const token = String(data.get('adminToken') || '').trim();
   const payload = {
     excerpt: data.get('excerpt'),
-    language: data.get('language'),
     songTitle: data.get('songTitle'),
-    creators: [{ name: data.get('creatorName'), role: data.get('creatorRole') }],
-    sourceUrl: data.get('sourceUrl'),
-    rightsBasis: data.get('rightsBasis'),
-    rightsNote: data.get('rightsNote'),
-    curatorNote: data.get('curatorNote'),
-    themes: String(data.get('themes') || '').split(/[,，]/).map((item) => item.trim()).filter(Boolean),
-    submitterName: data.get('submitterName'),
-    submitterContact: data.get('submitterContact'),
-    rightsConfirmed: data.get('rightsConfirmed') === 'on'
+    performerName: data.get('performerName'),
+    lyricistName: data.get('lyricistName')
   };
 
   elements.submissionStatus.textContent = '';
   submitButton.disabled = true;
-  submitButton.firstChild.textContent = '提交中… ';
+  submitButton.firstChild.textContent = '发布中… ';
   try {
-    const result = await apiFetch('/api/v1/submissions', {
+    if (!token) throw new Error('请输入管理员口令');
+    state.reviewToken = token;
+    elements.reviewToken.value = token;
+    const result = await apiFetch('/api/v1/admin/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify(payload)
     });
     form.reset();
-    $('[name="creatorRole"]', form).value = '作词';
     $('#excerpt-count').textContent = '0';
-    elements.submissionStatus.textContent = `已进入审核队列：${result.data.id}`;
-    showToast('投稿成功，已进入人工审核');
+    elements.submissionStatus.textContent = `已发布：${result.data.id}`;
+    showToast('摘句已直接发布');
+    await Promise.all([loadEntries(), loadStats()]);
   } catch (error) {
     const detail = error.details?.[0]?.message;
     elements.submissionStatus.textContent = detail || error.message;
     showToast(detail || error.message);
   } finally {
     submitButton.disabled = false;
-    submitButton.firstChild.textContent = '提交审核 ';
+    submitButton.firstChild.textContent = '直接发布 ';
   }
 }
 
@@ -463,13 +464,14 @@ async function reviewSubmission(id, action, reviewNote, card) {
 async function loadConfig() {
   try {
     const config = await apiFetch('/api/v1/config');
+    state.adminMode = config.adminMode === true;
+    state.githubIssuesUrl = config.githubIssuesUrl || '';
     state.providerConfig = config.providers || {};
-    if (config.demoMode) {
-      elements.demoTokenNote.textContent = `开发演示口令：${config.demoReviewToken}`;
-      elements.reviewToken.value = config.demoReviewToken;
-      state.reviewToken = config.demoReviewToken;
-    } else {
-      elements.demoTokenNote.textContent = '生产模式：审核口令不会在前台公开。';
+    $$('[data-admin-only]').forEach((element) => { element.hidden = !state.adminMode; });
+    elements.demoTokenNote.textContent = state.adminMode ? '审核口令仅保存在当前浏览器页面。' : '';
+    if (state.githubIssuesUrl) {
+      elements.githubIssuesLink.href = state.githubIssuesUrl;
+      elements.githubIssuesLink.hidden = false;
     }
     const jamendoOption = $('option[value="jamendo"]', elements.sourceProvider);
     const jamendoEnabled = config.providers?.jamendo?.enabled === true;
@@ -479,6 +481,8 @@ async function loadConfig() {
       : 'Jamendo · 需配置 client_id';
     if (state.currentView === 'review' && state.reviewToken) loadLocalLibrary();
   } catch {
+    state.adminMode = false;
+    $$('[data-admin-only]').forEach((element) => { element.hidden = true; });
     elements.demoTokenNote.textContent = '';
   }
 }
@@ -985,9 +989,10 @@ function bindEvents() {
 async function init() {
   $('#base-url').textContent = apiBase();
   bindEvents();
+  await loadConfig();
   showView(location.hash.slice(1) || 'discover', false);
   updateCodeSample('entries');
-  await Promise.all([loadEntries(), loadStats(), loadConfig()]);
+  await Promise.all([loadEntries(), loadStats()]);
 }
 
 init();
