@@ -12,6 +12,8 @@ const state = {
   reviewToken: '',
   sourceTracks: [],
   localTracks: [],
+  localPage: 1,
+  localRequest: 0,
   currentCandidate: null,
   providerConfig: {},
   toastTimer: null
@@ -623,7 +625,8 @@ function localSegmentCard(track, segment) {
   const text = document.createElement('blockquote');
   text.textContent = segment.text;
   const metadata = document.createElement('p');
-  metadata.textContent = `评分 ${segment.score} · ${segment.word_count} 词 · ${segment.char_count} 字符${segment.duplicate_count > 1 ? ` · 原歌词重复 ${segment.duplicate_count} 次` : ''}`;
+  const statusLabel = { candidate: '待审', filtered: '自动过滤', approved: '已发布', rejected: '已驳回' }[segment.status];
+  metadata.textContent = `${statusLabel} · 评分 ${segment.score} · ${segment.word_count} 词 · ${segment.char_count} 字符${segment.duplicate_count > 1 ? ` · 原歌词重复 ${segment.duplicate_count} 次` : ''}`;
   const tokens = document.createElement('div');
   tokens.className = 'local-tokens';
   segment.tokens.slice(0, 18).forEach((token) => {
@@ -645,7 +648,7 @@ function localSegmentCard(track, segment) {
   approve.className = 'approve';
   approve.textContent = '核对并发布';
   approve.addEventListener('click', () => openLocalCandidate(track, segment));
-  actions.append(reject, approve);
+  if (['candidate', 'filtered'].includes(segment.status)) actions.append(reject, approve);
 
   item.append(content, actions);
   return item;
@@ -655,7 +658,7 @@ async function loadLocalSegments(details, track) {
   const body = $('.local-track-body', details);
   body.replaceChildren(reviewPlaceholder('正在读取分词结果', '从本地 SQLite 载入候选…'));
   try {
-    const payload = await apiFetch(`/api/v1/review/local/tracks/${track.id}?status=candidate`, {
+    const payload = await apiFetch(`/api/v1/review/local/tracks/${track.id}?status=${$('#local-segment-status').value}`, {
       headers: { Authorization: `Bearer ${state.reviewToken || elements.reviewToken.value.trim()}` }
     });
     const segments = payload.data.segments;
@@ -694,21 +697,35 @@ function localTrackCard(track) {
 }
 
 async function loadLocalLibrary() {
-  const token = state.reviewToken || elements.reviewToken.value.trim();
-  if (!token) return;
+  const token = elements.reviewToken.value.trim() || state.reviewToken;
+  if (!token) { showToast('请先输入审核口令'); return; }
   state.reviewToken = token;
+  const request = ++state.localRequest;
+  const params = new URLSearchParams({ page: String(state.localPage), limit: '24', q: $('#local-library-query').value.trim(), candidates_only: String($('#local-library-scope').value === 'candidate') });
+  $('#local-prev').disabled = true;
+  $('#local-next').disabled = true;
   elements.localTrackList.replaceChildren(reviewPlaceholder('正在读取本地曲库', '载入 SQLite 统计…'));
   try {
-    const payload = await apiFetch('/api/v1/review/local/tracks?candidates_only=1', {
+    const payload = await apiFetch(`/api/v1/review/local/tracks?${params}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    if (request !== state.localRequest) return;
+    if (state.localPage > 1 && state.localPage > payload.pagination.pages) {
+      state.localPage = Math.max(1, payload.pagination.pages);
+      return loadLocalLibrary();
+    }
+    $('#local-page').textContent = payload.pagination.pages ? `第 ${state.localPage} / ${payload.pagination.pages} 页` : '暂无结果';
+    $('#local-prev').disabled = state.localPage <= 1;
+    $('#local-next').disabled = state.localPage >= payload.pagination.pages;
     state.localTracks = payload.data;
     elements.localTrackCount.textContent = payload.stats.visibleSourceTracks ?? payload.data.length;
     elements.localCandidateCount.textContent = payload.stats.candidates;
     elements.localTrackList.replaceChildren(...(payload.data.length
       ? payload.data.map(localTrackCard)
-      : [reviewPlaceholder('当前没有待选歌曲', '待选片段为 0 的歌曲已自动隐藏。')]));
+      : [reviewPlaceholder('没有匹配歌曲', '试试其他关键词，或将歌曲范围切换为“全部来源歌曲”。')]));
   } catch (error) {
+    if (request !== state.localRequest) return;
+    $('#local-page').textContent = '';
     elements.localTrackCount.textContent = '—';
     elements.localCandidateCount.textContent = '—';
     elements.localTrackList.replaceChildren(reviewPlaceholder('无法读取本地曲库', error.message));
@@ -1021,6 +1038,19 @@ function bindEvents() {
 
   $('#source-search-form').addEventListener('submit', searchSources);
   $('#refresh-local-library').addEventListener('click', loadLocalLibrary);
+  $('#local-library-filter').addEventListener('submit', (event) => {
+    event.preventDefault(); state.localPage = 1; loadLocalLibrary();
+  });
+  for (const id of ['local-library-scope', 'local-segment-status']) {
+    $(`#${id}`).addEventListener('change', () => { state.localPage = 1; loadLocalLibrary(); });
+  }
+  for (const [id, delta] of [['local-prev', -1], ['local-next', 1]]) {
+    $(`#${id}`).addEventListener('click', async () => {
+      state.localPage += delta;
+      await loadLocalLibrary();
+      $('#local-library-filter').scrollIntoView({ block: 'start' });
+    });
+  }
   elements.manualUploadForm.addEventListener('submit', uploadManualTrack);
   elements.sourceProvider.addEventListener('change', () => {
     elements.sourceProviderNote.textContent = elements.sourceProvider.value === 'jamendo'

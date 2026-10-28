@@ -544,3 +544,8 @@ a { color: inherit; }
 .song-excerpts { display: grid; gap: 12px; margin-top: 20px; }
 .song-excerpts button { text-align: left; white-space: pre-line; overflow-wrap: anywhere; font: 17px/1.7 var(--serif); color: var(--ink); padding: 14px; background: transparent; border: 1px solid var(--line); cursor: pointer; }
 button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+
+.library-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 20px 0; }
+.library-filters label { display: grid; gap: 8px; font-size: 12px; flex: 1 1 180px; }
+.library-filters input, .library-filters select { min-width: 0; width: 100%; padding: 10px; background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+.library-filters button { padding: 11px 20px; background: var(--green); color: white; border: 0; cursor: pointer; }

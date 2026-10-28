@@ -401,6 +401,12 @@ function buildOpenApi(origin, adminMode = false) {
             in: 'query',
             schema: { type: 'boolean', default: false },
             description: '只返回仍有待选片段的歌曲'
+          }, {
+            name: 'q', in: 'query', schema: { type: 'string' }, description: '搜索歌曲、歌手、词曲作者或来源编号'
+          }, {
+            name: 'page', in: 'query', schema: { type: 'integer', minimum: 1 }, description: '传入 page 或 limit 时启用分页；省略时返回全部匹配记录'
+          }, {
+            name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 50 }
           }],
           responses: { 200: { description: '本地歌曲及候选统计' } }
         }
@@ -939,9 +945,14 @@ export async function createLyricServer(options = {}) {
         const candidatesOnly = ['1', 'true'].includes(
           String(url.searchParams.get('candidates_only') || '').toLocaleLowerCase()
         );
-        const tracks = database.listSourceTracks({ candidatesOnly });
+        const query = cleanText(url.searchParams.get('q') || '', 100).toLocaleLowerCase();
+        const tracks = database.listSourceTracks({ candidatesOnly }).filter((track) =>
+          !query || [track.track_name, track.artist_name, track.lyricist_name, track.composer_name,
+            track.provider, track.provider_track_id].join(' ').toLocaleLowerCase().includes(query)
+        );
+        const paged = url.searchParams.has('page') || url.searchParams.has('limit');
         sendJson(res, 200, {
-          data: tracks,
+          ...(paged ? paginate(tracks, url.searchParams) : { data: tracks }),
           stats: { ...database.stats(), visibleSourceTracks: tracks.length }
         });
         return;

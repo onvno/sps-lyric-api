@@ -447,3 +447,40 @@ test('all public entries and songs remain reachable through filtered pagination'
     }
   }, { adminMode: false });
 });
+
+test('admin library searches all sources and paginates without publishing candidates', async () => {
+  await withServer(async ({ base }) => {
+    const headers = { authorization: 'Bearer test-review-token', 'content-type': 'application/json' };
+    for (const name of ['Alpha', 'Beta', 'Gamma']) {
+      const response = await fetch(`${base}/api/v1/review/local/upload`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ trackName: `${name} Song`, artistName: `${name} Artist`, language: 'en', sourceUrl: `https://example.com/${name}`, plainLyrics: 'The road remembers where we started\nTomorrow asks us where to go' })
+      });
+      assert.equal(response.status, 201);
+    }
+    const library = (query) => fetch(`${base}/api/v1/review/local/tracks${query}`, { headers }).then((response) => response.json());
+    const first = await library('?page=1&limit=2&candidates_only=1');
+    const second = await library('?page=2&limit=2&candidates_only=1');
+    assert.equal(first.pagination.total, 3);
+    assert.equal(first.data.length, 2);
+    assert.equal(second.data.length, 1);
+    assert.ok(!first.data.some((track) => track.id === second.data[0].id));
+    const found = await library('?q=beta%20artist&page=1&limit=24');
+    assert.equal(found.pagination.total, 1);
+    assert.equal(found.data[0].track_name, 'Beta Song');
+    assert.equal(found.stats.visibleSourceTracks, 1);
+    assert.equal(found.stats.sourceTracks, 3);
+    const detail = await fetch(`${base}/api/v1/review/local/tracks/${found.data[0].id}`, { headers }).then((response) => response.json());
+    for (const segment of detail.data.segments) {
+      const rejected = await fetch(`${base}/api/v1/review/local/segments/${segment.id}`, {
+        method: 'PATCH', headers, body: JSON.stringify({ action: 'reject', reviewNote: 'Excluded test fixture.' })
+      });
+      assert.equal(rejected.status, 200);
+    }
+    assert.equal((await library('?q=beta&candidates_only=1&limit=24')).pagination.total, 0);
+    assert.equal((await library('?q=beta&candidates_only=0&limit=24')).pagination.total, 1);
+    assert.equal((await library('')).data.length, 3, 'unpaginated API remains compatible');
+    const publicResult = await fetch(`${base}/api/v1/entries?q=Beta`).then((response) => response.json());
+    assert.equal(publicResult.pagination.total, 0);
+  });
+});

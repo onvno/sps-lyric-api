@@ -6,7 +6,7 @@
     <meta name="description" content="摘句：人工策展、可搜索的中英文经典歌词摘句 API。" />
     <meta name="theme-color" content="#f3efe4" />
     <title>摘句 · SPS Lyric API</title>
-    <link rel="stylesheet" href="/styles.css?v=20261029-browse" />
+    <link rel="stylesheet" href="/styles.css?v=20261029-admin" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -289,11 +289,17 @@
               <p>整首歌词保存在本机 SQLite；系统先分词、去重和评分，再由你逐条批准。</p>
             </div>
             <div class="local-library-stats">
-              <span><strong id="local-track-count">—</strong> 首有待选歌曲</span>
-              <span><strong id="local-candidate-count">—</strong> 条待选</span>
+              <span><strong id="local-track-count">—</strong> 首匹配歌曲</span>
+              <span><strong id="local-candidate-count">—</strong> 条全库待选</span>
               <button id="refresh-local-library" type="button">刷新</button>
             </div>
           </div>
+          <form id="local-library-filter" class="library-filters">
+            <label>搜索本地歌曲<input id="local-library-query" type="search" placeholder="歌名、歌手、词曲作者或来源编号" /></label>
+            <label>歌曲范围<select id="local-library-scope"><option value="candidate">有待审候选</option><option value="all">全部来源歌曲</option></select></label>
+            <label>展开后显示<select id="local-segment-status"><option value="candidate">待审候选</option><option value="all">全部片段与状态</option></select></label>
+            <button type="submit">查找</button>
+          </form>
           <details class="manual-upload">
             <summary>人工上传整首歌词</summary>
             <form id="manual-upload-form">
@@ -332,6 +338,11 @@
           <div class="local-track-list" id="local-track-list">
             <div class="source-results-status">从上方曲库搜索一首歌，然后选择“下载整首到本地分析”。</div>
           </div>
+          <nav class="pagination" aria-label="管理曲库分页">
+            <button type="button" id="local-prev" disabled>上一页</button>
+            <span id="local-page" aria-live="polite"></span>
+            <button type="button" id="local-next" disabled>下一页</button>
+          </nav>
         </section>
 
         <div class="review-summary">
@@ -435,6 +446,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="/app.js?v=20261029-browse"></script>
+    <script type="module" src="/app.js?v=20261029-admin"></script>
   </body>
 </html>
