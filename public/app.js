@@ -1,3 +1,5 @@
+import { createSharePanel } from './share-image.js?v=20261029-share-1';
+
 const state = {
   entries: [],
   collection: 'entries',
@@ -265,7 +267,11 @@ async function loadStats() {
   }
 }
 
+let currentSharePanel = null;
+
 function openEntry(entry) {
+  currentSharePanel?.dispose();
+  currentSharePanel = createSharePanel(entry, showToast);
   const body = document.createElement('div');
   body.className = 'dialog-body';
 
@@ -310,7 +316,7 @@ function openEntry(entry) {
   source.textContent = `${entry.source.label} ↗`;
   rights.append(rightsTitle, rightsText, source);
 
-  body.append(language, quote, songBlock, note, tags, rights);
+  body.append(language, quote, songBlock, currentSharePanel.element, note, tags, rights);
   elements.dialogContent.replaceChildren(body);
   if (typeof elements.dialog.showModal === 'function') elements.dialog.showModal();
   else elements.dialog.setAttribute('open', '');
@@ -1007,6 +1013,7 @@ function bindEvents() {
     }
   });
 
+  elements.dialog.addEventListener('close', () => { currentSharePanel?.dispose(); currentSharePanel = null; });
   $('#dialog-close').addEventListener('click', () => elements.dialog.close());
   elements.dialog.addEventListener('click', (event) => {
     if (event.target === elements.dialog) elements.dialog.close();

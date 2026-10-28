@@ -549,3 +549,15 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); 
 .library-filters label { display: grid; gap: 8px; font-size: 12px; flex: 1 1 180px; }
 .library-filters input, .library-filters select { min-width: 0; width: 100%; padding: 10px; background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 .library-filters button { padding: 11px 20px; background: var(--green); color: white; border: 0; cursor: pointer; }
+
+/* Downloadable lyric artwork */
+.share-panel { margin: 24px 0; border: 1px solid var(--line); padding: 16px; }
+.share-panel > summary { color: var(--green); font-size: 13px; cursor: pointer; font-weight: 700; line-height: 1.6; }
+.share-templates { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.share-templates button { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.share-templates button::before { content: ''; background: var(--share-swatch); width: 15px; height: 15px; border: 1px solid #9d998b; border-radius: 50%; }
+.share-templates button[aria-pressed="true"] { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+.share-preview { display: block; width: auto; max-width: 100%; height: auto; max-height: min(52vh, 480px); margin: 0 auto; border: 1px solid var(--line); }
+.share-status { color: var(--ink-soft); font-size: 11px; line-height: 1.6; }
+.share-download { display: inline-block; padding: 12px 20px; background: var(--green); color: white; font-size: 13px; text-decoration: none; }
+@media (max-width: 540px) { .share-panel { padding: 12px; } .share-templates button { padding: 9px 10px; } }
