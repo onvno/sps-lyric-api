@@ -14,6 +14,7 @@ backup/
 *.db-wal
 *.db-shm
 *.db-journal
+*.db.incoming-*
 *.sqlite
 *.sqlite3
 data/*.tmp

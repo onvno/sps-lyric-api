@@ -110,7 +110,9 @@ npm run db:release -- \
 | `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.manifest.json` | 是 | 版本、统计和安装说明 |
 | `data/lyrics.db`、`lyrics.db-wal`、`lyrics.db-shm` | 否 | 本机运行文件，不作为 Release 直接上传 |
 
-用户下载 Release 后，可先停止服务，再执行 `npm run db:install -- --asset RELEASE_DB --checksum RELEASE_SHA256 --apply` 完成校验和原子替换。发布前请确认数据库中的来源、作者标注及再分发条件符合你的发布范围。
+用户下载 Release 后，可按 [README 的安装步骤](./README.md#安装发布数据库)预检、停止服务，再执行 `npm run db:install -- --asset RELEASE_DB --checksum RELEASE_SHA256 --apply` 完成校验和原子替换。安装会整体替换运行库，不合并本机新增或审核的数据；已有运行库会先备份到目标文件旁的 `backups/` 目录，具体路径见命令输出的 `backup` 字段。
+
+若服务使用自定义的 `LYRICS_DB_PATH`，安装命令也必须用 `--db` 显式指定同一个文件，`db:install` 不读取该环境变量。发布前请确认数据库中的来源、作者标注及再分发条件符合你的发布范围。
 
 ## API 一览
 
