@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "node --watch server.mjs",
     "start": "node server.mjs",
+    "service:restart": "pm2 restart ecosystem.config.cjs --only sps-lyric-api --update-env",
+    "service:restart:tunnel": "pm2 restart sps-lyric-api-tunnel",
     "db:init": "node scripts/init-db.mjs",
     "db:release": "node scripts/build-database-release.mjs",
     "db:install": "node scripts/install-database-release.mjs",
