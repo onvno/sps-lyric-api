@@ -36,6 +36,14 @@ export function shareFilename(entry, templateId) {
   return `摘句-${title}${id ? `-${id}` : ''}-${templateId}.png`;
 }
 
+// Older Chinese imports use spaces between lyric lines. Only normalize artwork;
+// English word spacing, song titles, credits and the stored excerpt stay intact.
+export function formatShareLyrics(entry) {
+  const text = String(entry.excerpt).replace(/\r\n?/gu, '\n');
+  if (entry.language !== 'zh-CN') return text;
+  return text.split('\n').map((line) => line.trim().replace(/[ \t\u00a0\u3000]+/gu, '\n')).join('\n');
+}
+
 export function renderShareImage(entry, templateId, canvas = document.createElement('canvas')) {
   const theme = SHARE_TEMPLATES.find((item) => item.id === templateId) || SHARE_TEMPLATES[0];
   canvas.width = 1080;
@@ -43,11 +51,12 @@ export function renderShareImage(entry, templateId, canvas = document.createElem
   if (!context) throw new Error('当前浏览器不支持图片生成');
   let fontSize = 58;
   context.font = `${fontSize}px ${SERIF}`;
-  let lyrics = wrapText(context, entry.excerpt, 848);
+  const excerpt = formatShareLyrics(entry);
+  let lyrics = wrapText(context, excerpt, 848);
   if (lyrics.length > 10) {
     fontSize = 46;
     context.font = `${fontSize}px ${SERIF}`;
-    lyrics = wrapText(context, entry.excerpt, 848);
+    lyrics = wrapText(context, excerpt, 848);
   }
   const lineHeight = fontSize * 1.65;
   context.font = `34px ${SERIF}`;

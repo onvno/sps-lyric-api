@@ -1,4 +1,4 @@
-import { createSharePanel } from './share-image.js?v=20261029-share-1';
+import { createSharePanel } from './share-image.js?v=20261029-share-2';
 
 const state = {
   entries: [],

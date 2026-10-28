@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { wrapText, renderShareImage, shareFilename, SHARE_TEMPLATES } from '../public/share-image.js';
+import { formatShareLyrics, wrapText, renderShareImage, shareFilename, SHARE_TEMPLATES } from '../public/share-image.js';
 
 const context = { measureText: (text) => ({ width: [...text].length * 20 }) };
 
@@ -41,4 +41,27 @@ test('share PNG filenames are portable and identify the entry and template', () 
   const name = shareFilename({ id: 'en/one', song: { title: 'A/B: "Song"?' } }, 'forest');
   assert.match(name, /-enone-forest\.png$/u);
   assert.doesNotMatch(name, /[\\/:*?"<>|]/u);
+});
+
+
+test('Chinese share images turn space separators into lines while preserving original text and English words', () => {
+  const entry = { language: 'zh-CN', excerpt: ' 第一行  第二行\t第三行\u3000第四行\u00a0第五行 \r\n 第六行\n\n第七行 ' };
+  const original = entry.excerpt;
+  assert.equal(formatShareLyrics(entry), '第一行\n第二行\n第三行\n第四行\n第五行\n第六行\n\n第七行');
+  assert.equal(entry.excerpt, original);
+  assert.equal(formatShareLyrics({ language: 'en', excerpt: 'Amazing grace! How sweet the sound.\r\nA second line.' }), 'Amazing grace! How sweet the sound.\nA second line.');
+});
+
+test('every share template renders space-separated Chinese lyrics on distinct lines', () => {
+  const entry = { id: 'spaced', language: 'zh-CN', song: { title: '中文 Song Title' }, excerpt: '你问我 为什么顽固而专一\n天下太大 总有人比你更合适', creators: [{ name: 'John Newton', role: 'Lyrics' }] };
+  for (const theme of SHARE_TEMPLATES) {
+    const draws = [];
+    const fakeContext = new Proxy({ measureText: context.measureText, fillText: (text, x, y) => draws.push({ text, y }) }, { get: (target, key) => key in target ? target[key] : () => {} });
+    renderShareImage(entry, theme.id, { getContext: () => fakeContext });
+    const lyricDraws = draws.filter(({ text }) => ['你问我', '为什么顽固而专一', '天下太大', '总有人比你更合适'].includes(text));
+    assert.equal(lyricDraws.length, 4);
+    assert.equal(new Set(lyricDraws.map(({ y }) => y)).size, 4);
+    assert.ok(draws.some(({ text }) => text === '《中文 Song Title》'));
+    assert.ok(draws.some(({ text }) => text === 'John Newton · Lyrics'));
+  }
 });
