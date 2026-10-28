@@ -127,6 +127,83 @@ LYRICS_DB_PATH=/absolute/path/lyrics.db npm start
 
 运行数据库保存在 `data/lyrics.db`，备份保存在 `data/backups/`，下载及生成的 Release 附件统一放在 `dist/releases/版本/`。这些本机文件均被 Git 忽略；数据库通过 GitHub Release 单独发布，不提交到 Git。
 
+## Docker 部署与数据更新
+
+需要已启动的 Docker Engine / Docker Desktop，以及支持 `up --wait` 的 Docker Compose v2。Docker 方式不要求宿主机安装 Node.js 或 npm。
+
+### 首次部署
+
+在仓库根目录执行（已有 `.env` 时直接编辑，保留原配置）：
+
+```bash
+cp .env.example .env
+mkdir -p data dist/releases
+# 让容器以当前用户身份写入宿主机数据目录
+printf 'LOCAL_UID=%s\nLOCAL_GID=%s\n' "$(id -u)" "$(id -g)" >> .env
+docker compose build
+```
+
+将下载的三个 Release 附件放入 `dist/releases/版本/`，例如 `dist/releases/2026.07.19/`。然后预检、安装并启动：
+
+```bash
+sh scripts/docker-db.sh --version 2026.07.19
+sh scripts/docker-db.sh --version 2026.07.19 --apply
+docker compose ps
+curl 'http://localhost:8787/api/health'
+```
+
+`--apply` 成功后会启动服务并等待健康检查通过，打开 <http://localhost:8787> 即可使用。若只想体验演示库，可以跳过 Release 安装，执行 `docker compose up -d --wait`。
+
+Compose 将宿主机 `data/` 挂载到容器的 `/var/lib/sps-lyrics/`，运行库为其中的 `lyrics.db`，备份位于 `backups/`。下载附件以只读方式挂载到 `/releases/`。镜像只包含应用与少量演示数据，不包含你的运行库或 Release 数据库；重建、删除容器后，宿主机数据仍会保留。
+
+若已有通过 `npm start` 启动的服务，请先停止它，再用 Docker 接管同一个 `data/` 目录。不要让两个实例同时维护或替换同一运行库。不同实例应分别设置 `LYRICS_DATA_DIR` 和 `PORT`。
+
+### 配置与管理
+
+编辑 `.env` 可设置端口、管理员口令和数据目录。默认仅绑定本机 `127.0.0.1:8787`。部署到服务器时，推荐通过反向代理提供 HTTPS；需要直接对外监听时，将 `BIND_HOST` 设为 `0.0.0.0`。
+
+启用管理员模式：在 `.env` 中设置 `ADMIN_MODE=true`，并为 `REVIEWER_TOKEN` 填入自己的长随机口令，再执行：
+
+```bash
+docker compose up -d --wait
+```
+
+网页会出现“录入”和“审核”入口。配置变更后使用 `up`，让 Compose 重新创建容器并应用配置；具体录入流程见 [ADMIN.md](./ADMIN.md)。`.env` 由 Compose 读取，普通 `npm start` 不会自动读取它；原生 Node.js 方式可用 `node --env-file=.env server.mjs` 显式加载。
+
+### 更新数据库
+
+将新版附件放入 `dist/releases/新版版本/`，运行相同的 `docker-db.sh --version 新版版本` 命令。默认仅预检；加 `--apply` 才会停服、备份并整体替换运行库，随后启动服务并检查健康状态。预检失败不会停止服务。
+
+**整库更新不会合并个人新增、修改或审核的数据。** 自行维护曲库的用户应保留自己的数据库；请不要把安装新版 Release 当作增量同步。每次覆盖前都会生成备份，但备份后的新写入也不会出现在旧备份中。
+
+脚本输出的 `backup` 路径指向容器中的备份，例如 `/var/lib/sps-lyrics/backups/lyrics-before-release-install-时间.db`。回滚时只传入该文件名：
+
+```bash
+# 默认仍是预检
+sh scripts/docker-db.sh --backup lyrics-before-release-install-时间.db
+# 确认后回滚；回滚前也会备份当前库
+sh scripts/docker-db.sh --backup lyrics-before-release-install-时间.db --apply
+```
+
+将上面的示例文件名换成实际备份文件名。更新后若健康检查失败，脚本会报错；用 `docker compose logs --tail=100 api` 查看原因，再修正配置或回滚，不会把失败报告为更新成功。数据库更新应安排在没有其他管理员操作或导入任务时执行。
+
+### 更新应用与常用运维命令
+
+```bash
+# 更新代码及镜像，继续使用已有数据库
+git pull
+docker compose up -d --build --wait
+
+# 查看日志 / 停服
+docker compose logs --tail=100 api
+docker compose stop api
+
+# 停止并移除容器（宿主机 data/ 和备份保留）
+docker compose down
+```
+
+数据库与应用分别发布、分别更新。仅升级镜像不会安装或下载新的数据库。首次拉取 Node.js 基础镜像需要网络；不要删除宿主机 `data/` 目录，日常备份也应复制到另一存储位置。
+
 ## 歌词计划与入库清单
 
 计划收录和已录入歌曲的人工维护清单见 [Song.md](./Song.md)。后续新增歌曲后，请同步更新这个文件并提交。

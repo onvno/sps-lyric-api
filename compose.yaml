@@ -1,0 +1,21 @@
+services:
+  api:
+    build: .
+    init: true
+    restart: unless-stopped
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${PORT:-8787}:8787"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8787
+      LYRICS_DB_PATH: /var/lib/sps-lyrics/lyrics.db
+      ADMIN_MODE: "${ADMIN_MODE:-false}"
+      REVIEWER_TOKEN: "${REVIEWER_TOKEN:-}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-}"
+      GITHUB_ISSUES_URL: "${GITHUB_ISSUES_URL:-}"
+      JAMENDO_CLIENT_ID: "${JAMENDO_CLIENT_ID:-}"
+    volumes:
+      - "${LYRICS_DATA_DIR:-./data}:/var/lib/sps-lyrics"
+      - "${LYRICS_RELEASE_DIR:-./dist/releases}:/releases:ro"
+    stop_grace_period: 15s

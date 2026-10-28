@@ -21,3 +21,6 @@ data/*.tmp
 data/backups/
 data/import-manifests/
 dist/
+
+# Host-side database update lock.
+.docker-db-update.lock/

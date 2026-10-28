@@ -12,6 +12,8 @@ REVIEWER_TOKEN='replace-with-a-long-secret' \
 npm start
 ```
 
+如果使用 Docker，按 [README 的 Docker 配置步骤](./README.md#docker-部署与数据更新)修改 `.env` 并执行 `docker compose up -d --wait`。原生 Node.js 也可以在配置 `.env` 后通过 `node --env-file=.env server.mjs` 启动；`npm start` 本身不自动加载 `.env`。
+
 启动后，网页会出现“录入”和“审核”入口；所有 `/api/v1/admin/*` 和 `/api/v1/review/*` 接口都要求 `Authorization: Bearer <REVIEWER_TOKEN>`。未启用管理员模式时，这些路径返回 `404`。
 
 | 环境变量 | 用途 |

@@ -1262,6 +1262,16 @@ async function main() {
   const port = Number.parseInt(process.env.PORT || '8787', 10);
   const host = process.env.HOST || '127.0.0.1';
   const server = await createLyricServer();
+  let shuttingDown = false;
+  const shutdown = () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    server.close();
+    server.closeIdleConnections();
+    setTimeout(() => process.exit(1), 10_000).unref();
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
   server.listen(port, host, () => {
     console.log(`SPS Lyric API running at http://${host}:${port}`);
     console.log(environmentFlag(process.env.ADMIN_MODE) ? '管理员模式已启用。' : '默认只读模式；设置 ADMIN_MODE=true 可启用管理员功能。');

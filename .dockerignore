@@ -1,0 +1,12 @@
+# Allow only application sources and the small demo seed into the build context.
+*
+!Dockerfile
+!package.json
+!package-lock.json
+!*.mjs
+!public/
+!public/**
+!scripts/
+!scripts/**
+!data/
+!data/store.json

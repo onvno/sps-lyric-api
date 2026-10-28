@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -61,6 +61,12 @@ test('builds, verifies, and installs a standalone database release', async () =>
     assert.equal(preview.mode, 'dry-run');
     assert.equal(preview.database.source_tracks, 1);
 
+    const originalTarget = readFileSync(targetPath);
+    const badChecksum = join(directory, 'bad.sha256');
+    writeFileSync(badChecksum, `${'0'.repeat(64)}  database.db\n`);
+    assert.throws(() => installDatabaseRelease({ asset: release.assetPath, checksum: badChecksum, db: targetPath, apply: true }), /SHA-256 mismatch/);
+    assert.deepEqual(readFileSync(targetPath), originalTarget, 'failed preflight must preserve the runtime database');
+
     const installed = installDatabaseRelease({
       asset: release.assetPath,
       checksum: release.checksumPath,
@@ -71,6 +77,10 @@ test('builds, verifies, and installs a standalone database release', async () =>
     assert.ok(existsSync(installed.backup));
     assert.equal(installed.installed.source_tracks, 1);
     assert.equal(installed.installed.integrity, 'ok');
+    const restored = installDatabaseRelease({ asset: installed.backup, db: targetPath, apply: true });
+    assert.equal(restored.installed.source_tracks, 0);
+    assert.equal(restored.installed.integrity, 'ok');
+    assert.ok(existsSync(restored.backup), 'rollback also backs up the database being replaced');
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
