@@ -529,3 +529,18 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Collection browsing */
+.browse-controls, .pagination { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0; }
+.browse-controls button, .pagination button { border: 1px solid var(--green); color: var(--green); background: var(--card); padding: 10px 16px; cursor: pointer; }
+.browse-controls button[aria-pressed="true"] { background: var(--green); color: white; }
+.pagination { justify-content: center; margin-top: 28px; }
+.pagination button:disabled { opacity: .4; cursor: default; }
+#collection-summary, #collection-page { color: var(--ink-soft); font-size: 13px; }
+.song-card { border: 1px solid var(--line); background: var(--card); padding: 22px; align-self: start; min-width: 0; }
+.song-card summary { cursor: pointer; overflow-wrap: anywhere; }
+.song-card summary strong { font: 23px var(--serif); }
+.song-card summary span { display: block; margin-top: 12px; color: var(--ink-soft); font-size: 12px; line-height: 1.7; }
+.song-excerpts { display: grid; gap: 12px; margin-top: 20px; }
+.song-excerpts button { text-align: left; white-space: pre-line; overflow-wrap: anywhere; font: 17px/1.7 var(--serif); color: var(--ink); padding: 14px; background: transparent; border: 1px solid var(--line); cursor: pointer; }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }

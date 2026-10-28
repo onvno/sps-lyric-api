@@ -419,3 +419,31 @@ test('searches and downloads a public-domain catalog song with its original sour
     assert.equal(downloadedPayload.data.analysis.candidates, 2);
   }, { externalFetch });
 });
+
+test('all public entries and songs remain reachable through filtered pagination', async () => {
+  await withServer(async ({ base }) => {
+    for (const resource of ['entries', 'songs']) {
+      const ids = new Set();
+      let total = 0;
+      for (let page = 1; ; page += 1) {
+        const response = await fetch(`${base}/api/v1/${resource}?language=zh-CN&limit=2&page=${page}`);
+        assert.equal(response.status, 200);
+        const payload = await response.json();
+        total = payload.pagination.total;
+        assert.equal(payload.pagination.page, page);
+        for (const item of payload.data) {
+          assert.ok(!ids.has(item.id), 'pages must not repeat records');
+          ids.add(item.id);
+          if (resource === 'entries') assert.equal(item.language, 'zh-CN');
+          else assert.ok(item.entries.every((entry) => entry.language === 'zh-CN'));
+        }
+        if (page >= payload.pagination.pages) break;
+      }
+      assert.ok(total > 2);
+      assert.equal(ids.size, total);
+      const result = await fetch(`${base}/api/v1/${resource}?q=${encodeURIComponent('送别')}&limit=1&page=1`).then((response) => response.json());
+      assert.equal(result.data.length, 1);
+      assert.ok(result.pagination.total > 0);
+    }
+  }, { adminMode: false });
+});

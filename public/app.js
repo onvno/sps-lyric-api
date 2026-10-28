@@ -1,5 +1,9 @@
 const state = {
   entries: [],
+  collection: 'entries',
+  page: 1,
+  pages: 0,
+  collectionRequest: 0,
   language: '',
   query: '',
   currentView: 'discover',
@@ -182,29 +186,66 @@ function quoteCard(entry) {
   return card;
 }
 
-function renderEntries(entries) {
-  elements.quoteGrid.replaceChildren(...entries.map(quoteCard));
-  elements.quoteGrid.hidden = entries.length === 0;
-  elements.emptyState.hidden = entries.length !== 0;
+function songCard(song) {
+  const card = document.createElement('details');
+  card.className = 'song-card';
+  const summary = document.createElement('summary');
+  const title = document.createElement('strong');
+  title.textContent = `《${song.title}》`;
+  const metadata = document.createElement('span');
+  metadata.textContent = `${song.creators.map((creator) => creator.name).join(' / ')} · ${song.entryCount} 条摘句`;
+  summary.append(title, metadata);
+  const excerpts = document.createElement('div');
+  excerpts.className = 'song-excerpts';
+  for (const entry of song.entries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = entry.excerpt;
+    button.addEventListener('click', async () => {
+      try {
+        const payload = await apiFetch(`/api/v1/entries/${encodeURIComponent(entry.id)}`);
+        openEntry(payload.data);
+      } catch (error) { showToast(error.message); }
+    });
+    excerpts.append(button);
+  }
+  card.append(summary, excerpts);
+  return card;
 }
 
 async function loadEntries() {
-  const params = new URLSearchParams({ limit: '50' });
+  const request = ++state.collectionRequest;
+  const params = new URLSearchParams({ limit: '24', page: String(state.page) });
   if (state.language) params.set('language', state.language);
   if (state.query) params.set('q', state.query);
   elements.quoteGrid.setAttribute('aria-busy', 'true');
+  $('#collection-prev').disabled = true;
+  $('#collection-next').disabled = true;
+  $('#collection-summary').textContent = '正在载入…';
   try {
-    const payload = await apiFetch(`/api/v1/entries?${params}`);
+    const payload = await apiFetch(`/api/v1/${state.collection}?${params}`);
+    if (request !== state.collectionRequest) return;
     state.entries = payload.data;
-    renderEntries(state.entries);
+    state.pages = payload.pagination.pages;
+    elements.quoteGrid.replaceChildren(...payload.data.map(state.collection === 'songs' ? songCard : quoteCard));
+    elements.quoteGrid.hidden = payload.data.length === 0;
+    elements.emptyState.hidden = payload.data.length !== 0;
+    const unit = state.collection === 'songs' ? '首歌曲' : '条摘句';
+    $('#collection-summary').textContent = `共 ${payload.pagination.total} ${unit}，当前显示 ${payload.data.length} ${unit}`;
+    $('#collection-page').textContent = state.pages ? `第 ${state.page} / ${state.pages} 页` : '暂无结果';
+    $('#collection-prev').disabled = state.page <= 1;
+    $('#collection-next').disabled = state.page >= state.pages;
     elements.activeSearch.hidden = !state.query;
     elements.activeQuery.textContent = state.query;
   } catch (error) {
+    if (request !== state.collectionRequest) return;
     elements.quoteGrid.replaceChildren();
-    elements.emptyState.hidden = false;
+    elements.emptyState.hidden = true;
+    $('#collection-summary').textContent = `载入失败：${error.message}，请重新搜索或切换浏览方式重试。`;
+    $('#collection-page').textContent = '';
     showToast(error.message);
   } finally {
-    elements.quoteGrid.removeAttribute('aria-busy');
+    if (request === state.collectionRequest) elements.quoteGrid.removeAttribute('aria-busy');
   }
 }
 
@@ -901,11 +942,13 @@ function bindEvents() {
 
   elements.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
+    state.page = 1;
     state.query = elements.searchInput.value.trim();
     loadEntries();
   });
 
   elements.clearSearch.addEventListener('click', () => {
+    state.page = 1;
     state.query = '';
     elements.searchInput.value = '';
     loadEntries();
@@ -913,11 +956,28 @@ function bindEvents() {
 
   $$('.filter-chip').forEach((button) => {
     button.addEventListener('click', () => {
+      state.page = 1;
       state.language = button.dataset.language;
       $$('.filter-chip').forEach((item) => item.classList.toggle('is-active', item === button));
       loadEntries();
     });
   });
+
+  $$('[data-collection]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.collection = button.dataset.collection;
+      state.page = 1;
+      $$('[data-collection]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+      loadEntries();
+    });
+  });
+  for (const [id, delta] of [['collection-prev', -1], ['collection-next', 1]]) {
+    $(`#${id}`).addEventListener('click', async () => {
+      state.page += delta;
+      await loadEntries();
+      $('.collection-heading').scrollIntoView({ block: 'start' });
+    });
+  }
 
   $('#random-button').addEventListener('click', async () => {
     const params = new URLSearchParams();

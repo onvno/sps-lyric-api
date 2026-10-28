@@ -6,7 +6,7 @@
     <meta name="description" content="摘句：人工策展、可搜索的中英文经典歌词摘句 API。" />
     <meta name="theme-color" content="#f3efe4" />
     <title>摘句 · SPS Lyric API</title>
-    <link rel="stylesheet" href="/styles.css?v=20260719-admin" />
+    <link rel="stylesheet" href="/styles.css?v=20261029-browse" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -72,7 +72,7 @@
           <div class="collection-heading">
             <div>
               <p class="section-kicker">THE COLLECTION</p>
-              <h2>今日摘句</h2>
+              <h2>浏览曲库</h2>
             </div>
             <div class="language-filters" role="group" aria-label="按语言筛选">
               <button class="filter-chip is-active" data-language="">全部</button>
@@ -85,6 +85,11 @@
             </button>
           </div>
 
+          <div class="browse-controls" role="group" aria-label="浏览方式">
+            <button type="button" data-collection="entries" aria-pressed="true">按摘句浏览</button>
+            <button type="button" data-collection="songs" aria-pressed="false">按歌曲浏览</button>
+          </div>
+          <p id="collection-summary" role="status"></p>
           <div class="active-search" id="active-search" hidden>
             <span>正在搜索：<strong id="active-query"></strong></span>
             <button id="clear-search">清除</button>
@@ -92,6 +97,11 @@
 
           <div class="quote-grid" id="quote-grid" aria-live="polite"></div>
 
+          <nav class="pagination" aria-label="曲库分页">
+            <button type="button" id="collection-prev" disabled>上一页</button>
+            <span id="collection-page" aria-live="polite"></span>
+            <button type="button" id="collection-next" disabled>下一页</button>
+          </nav>
           <div class="empty-state" id="empty-state" hidden>
             <span>〽</span>
             <h3>还没有找到这一句</h3>
@@ -425,6 +435,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="/app.js?v=20260719-admin"></script>
+    <script type="module" src="/app.js?v=20261029-browse"></script>
   </body>
 </html>
