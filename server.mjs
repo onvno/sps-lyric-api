@@ -135,6 +135,18 @@ function reviewerAuthorized(req, reviewerToken) {
   return Boolean(reviewerToken) && safeEquals(token, reviewerToken);
 }
 
+function publicEntries(entries, origin) {
+  return entries.filter((entry) => entry.status === 'published').map((entry) => {
+    try {
+      const source = new URL(entry.source.url);
+      if (['localhost', '127.0.0.1', '[::1]'].includes(source.hostname) && source.pathname === '/legacy-sql-source.html') {
+        return { ...entry, source: { ...entry.source, url: `${origin}${source.pathname}${source.search}${source.hash}` } };
+      }
+    } catch { /* Keep unrecognized provenance unchanged. */ }
+    return entry;
+  });
+}
+
 function filterEntries(entries, searchParams) {
   const query = cleanText(searchParams.get('q') || '', 100).toLocaleLowerCase();
   const language = searchParams.get('language') || '';
@@ -682,8 +694,15 @@ export async function createLyricServer(options = {}) {
   const server = createServer(async (req, res) => {
     const origin = `http://${req.headers.host || 'localhost'}`;
     const canonicalOrigin = (publicBaseUrl || origin).replace(/\/$/, '');
-    const url = new URL(req.url || '/', origin);
-    const pathname = decodeURIComponent(url.pathname).replace(/\/+$/, '') || '/';
+    let url;
+    let pathname;
+    try {
+      url = new URL(req.url || '/', origin);
+      pathname = decodeURIComponent(url.pathname).replace(/\/+$/, '') || '/';
+    } catch {
+      apiError(res, 400, 'invalid_url', '无效的请求地址');
+      return;
+    }
 
     res.setHeader('access-control-allow-origin', process.env.CORS_ORIGIN || '*');
     res.setHeader('access-control-allow-headers', 'content-type, authorization');
@@ -726,13 +745,13 @@ export async function createLyricServer(options = {}) {
       }
 
       if (pathname === '/api/v1/openapi.json' && req.method === 'GET') {
-        sendJson(res, 200, buildOpenApi(origin, adminMode));
+        sendJson(res, 200, buildOpenApi(canonicalOrigin, adminMode));
         return;
       }
 
       if (pathname === '/api/v1/entries' && req.method === 'GET') {
         const store = await readStore();
-        const filtered = filterEntries(store.entries.filter((entry) => entry.status === 'published'), url.searchParams);
+        const filtered = filterEntries(publicEntries(store.entries, canonicalOrigin), url.searchParams);
         sendJson(res, 200, paginate(filtered, url.searchParams));
         return;
       }
@@ -740,7 +759,7 @@ export async function createLyricServer(options = {}) {
       const entryMatch = pathname.match(/^\/api\/v1\/entries\/([^/]+)$/);
       if (entryMatch && req.method === 'GET') {
         const store = await readStore();
-        const entry = store.entries.find((item) => item.id === entryMatch[1] && item.status === 'published');
+        const entry = publicEntries(store.entries, canonicalOrigin).find((item) => item.id === entryMatch[1]);
         if (!entry) {
           apiError(res, 404, 'entry_not_found', '未找到这条摘句');
           return;
@@ -751,14 +770,14 @@ export async function createLyricServer(options = {}) {
 
       if (pathname === '/api/v1/songs' && req.method === 'GET') {
         const store = await readStore();
-        const filtered = filterEntries(store.entries.filter((entry) => entry.status === 'published'), url.searchParams);
+        const filtered = filterEntries(publicEntries(store.entries, canonicalOrigin), url.searchParams);
         sendJson(res, 200, paginate(aggregateSongs(filtered), url.searchParams));
         return;
       }
 
       if (pathname === '/api/v1/random' && req.method === 'GET') {
         const store = await readStore();
-        const filtered = filterEntries(store.entries.filter((entry) => entry.status === 'published'), url.searchParams);
+        const filtered = filterEntries(publicEntries(store.entries, canonicalOrigin), url.searchParams);
         if (!filtered.length) {
           apiError(res, 404, 'no_match', '没有符合条件的摘句');
           return;

@@ -85,3 +85,18 @@ test('builds, verifies, and installs a standalone database release', async () =>
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('public demo releases contain only demo entries and no private source corpus', async () => {
+  const { buildDemoRelease } = await import('../scripts/build-demo-release.mjs');
+  const directory = await mkdtemp(join(tmpdir(), 'lyric-public-demo-'));
+  try {
+    const release = buildDemoRelease({ version: 'demo-test', outputDir: directory });
+    assert.equal(release.manifest.release_type, 'demo_sqlite_database');
+    assert.equal(release.manifest.database.entries, 20);
+    assert.equal(release.manifest.database.source_tracks, 0);
+    assert.equal(release.manifest.database.segments, 0);
+    const database = openLyricsDatabase({ dbPath: release.assetPath, seedPath: null });
+    assert.equal(database.stats().submissions, 0);
+    database.close();
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

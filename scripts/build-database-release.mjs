@@ -13,7 +13,7 @@ import { basename, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
-const HELP = `Build a consistent SQLite snapshot for a GitHub Release.
+const HELP = `Build a PRIVATE SQLite backup containing all local data. Do not publish it as an open-source data release.
 
 Usage:
   node scripts/build-database-release.mjs --version VERSION [options]
@@ -21,7 +21,7 @@ Usage:
 Options:
   --db PATH          Source SQLite database (default data/lyrics.db)
   --version VERSION  Release version used in asset names, e.g. 2026.07.19
-  --output-dir PATH  Asset directory (default dist/releases/VERSION)
+  --output-dir PATH  Asset directory (default data/backups/snapshots/VERSION)
   --force            Replace assets for the same version
   --help             Show this help
 `;
@@ -84,7 +84,7 @@ function readDatabaseSummary(database) {
 export function buildDatabaseRelease(options) {
   const sourcePath = resolve(options.db);
   if (!existsSync(sourcePath)) throw new Error(`Source database not found: ${sourcePath}`);
-  const outputDirectory = resolve(options.outputDir || `dist/releases/${options.version}`);
+  const outputDirectory = resolve(options.outputDir || `data/backups/snapshots/${options.version}`);
   mkdirSync(outputDirectory, { recursive: true });
   const assetPath = resolve(outputDirectory, `sps-lyric-api-${options.version}.db`);
   const checksumPath = `${assetPath}.sha256`;
@@ -118,7 +118,7 @@ export function buildDatabaseRelease(options) {
 
   const checksum = sha256(assetPath);
   const manifest = {
-    release_type: 'prebuilt_sqlite_database',
+    release_type: options.releaseType || 'private_sqlite_backup',
     version: options.version,
     generated_at: new Date().toISOString(),
     source_file: basename(sourcePath),

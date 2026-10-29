@@ -13,7 +13,7 @@
     "service:restart": "pm2 restart ecosystem.config.cjs --only sps-lyric-api --update-env",
     "service:restart:tunnel": "pm2 restart sps-lyric-api-tunnel",
     "db:init": "node scripts/init-db.mjs",
-    "db:release": "node scripts/build-database-release.mjs",
+    "db:release": "node scripts/build-demo-release.mjs",
     "db:install": "node scripts/install-database-release.mjs",
     "lyrics:fetch": "node scripts/fetch-lrclib.mjs",
     "lyrics:fetch:public-domain": "node scripts/fetch-public-domain.mjs",
@@ -24,6 +24,8 @@
     "lyrics:rebuild:candidates": "node skills/curate-lyric-lines/scripts/rebuild-final-candidates.mjs",
     "manifest:export": "node scripts/export-import-manifest.mjs",
     "lyrics:remove": "node scripts/remove-local-track.mjs",
-    "test": "node --test"
-  }
+    "test": "node --test",
+    "db:backup": "node scripts/build-database-release.mjs"
+  },
+  "license": "MIT"
 }

@@ -10,3 +10,5 @@
 !scripts/**
 !data/
 !data/store.json
+!skills/
+!skills/**

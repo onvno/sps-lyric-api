@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -483,4 +483,42 @@ test('admin library searches all sources and paginates without publishing candid
     const publicResult = await fetch(`${base}/api/v1/entries?q=Beta`).then((response) => response.json());
     assert.equal(publicResult.pagination.total, 0);
   });
+});
+
+test('invalid URL encodings return 400 and leave the server healthy', async () => {
+  await withServer(async ({ base }) => {
+    for (const path of ['/%ZZ', '/%E0%A4%A']) {
+      const response = await fetch(`${base}${path}`);
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).error.code, 'invalid_url');
+    }
+    assert.equal((await fetch(`${base}/api/health`)).status, 200);
+    const schema = await fetch(`${base}/api/v1/openapi.json`).then(r => r.json());
+    assert.equal(schema.servers[0].url, 'https://example.com/api/v1');
+  }, { publicBaseUrl: 'https://example.com' });
+});
+
+
+test('legacy provenance uses the deployment origin without rewriting stored data', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'lyric-legacy-origin-'));
+  try {
+    const seed = JSON.parse(await readFile(join(ROOT, 'data/store.json'), 'utf8'));
+    const sourceUrl = 'http://localhost:8787/legacy-sql-source.html';
+    seed.entries[0].source.url = sourceUrl;
+    const seedPath = join(directory, 'seed.json');
+    await writeFile(seedPath, JSON.stringify(seed));
+    await withServer(async ({ base, dbPath }) => {
+      for (const path of ['/api/v1/entries?limit=1', `/api/v1/entries/${seed.entries[0].id}`]) {
+        const body = await fetch(base + path).then(r => r.json());
+        const entry = Array.isArray(body.data) ? body.data[0] : body.data;
+        assert.equal(entry.source.url, 'https://example.com/legacy-sql-source.html');
+      }
+      const { DatabaseSync } = await import('node:sqlite');
+      const database = new DatabaseSync(dbPath, { readOnly: true });
+      try {
+        const entry = JSON.parse(database.prepare('SELECT payload_json FROM entries WHERE id = ?').get(seed.entries[0].id).payload_json);
+        assert.equal(entry.source.url, sourceUrl);
+      } finally { database.close(); }
+    }, { seedPath, publicBaseUrl: 'https://example.com' });
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

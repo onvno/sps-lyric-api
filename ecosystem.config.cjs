@@ -4,7 +4,7 @@ module.exports = {
       name: 'sps-lyric-api',
       cwd: __dirname,
       script: './scripts/run-public-server.sh',
-      interpreter: '/bin/zsh',
+      interpreter: '/bin/sh',
       env: {
         HOST: '127.0.0.1',
         PORT: '8791',

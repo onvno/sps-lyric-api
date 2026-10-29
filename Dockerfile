@@ -6,6 +6,7 @@ RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 COPY *.mjs ./
 COPY public ./public
 COPY scripts ./scripts
+COPY skills ./skills
 COPY data/store.json ./data/store.json
 RUN mkdir -p /var/lib/sps-lyrics && chown node:node /var/lib/sps-lyrics
 USER node
