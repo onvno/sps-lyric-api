@@ -12,7 +12,7 @@ REVIEWER_TOKEN='replace-with-a-long-secret' \
 npm start
 ```
 
-如果使用 Docker，按 [README 的 Docker 配置步骤](./README.md#docker-部署与数据更新)修改 `.env` 并执行 `docker compose up -d --wait`。原生 Node.js 也可以在配置 `.env` 后通过 `node --env-file=.env server.mjs` 启动；`npm start` 本身不自动加载 `.env`。
+如果使用 Docker，按 [部署文档](docs/deployment.md)修改 `.env` 并执行 `docker compose up -d --wait`。原生 Node.js 也可以在配置 `.env` 后通过 `node --env-file=.env server.mjs` 启动；`npm start` 本身不自动加载 `.env`。
 
 启动后，网页会出现“录入”和“审核”入口；所有 `/api/v1/admin/*` 和 `/api/v1/review/*` 接口都要求 `Authorization: Bearer <REVIEWER_TOKEN>`。未启用管理员模式时，这些路径返回 `404`。
 
@@ -87,34 +87,26 @@ npm run lyrics:rebuild:candidates -- --provider=chinese_lyrics,lrclib --apply
 
 社区不通过网页写入数据库。请让贡献者提交 GitHub Issue，模板位于 `.github/ISSUE_TEMPLATE/lyric-submission.yml`。管理员应核对歌曲、摘录、演唱者、可选作词人和实际来源后，再采用“直接录入”或“审核候选库”流程。
 
-## 发布数据库 Release
+## 私有备份与演示数据库发布
 
-默认运行数据库是 `data/lyrics.db`；如果启动时设置了 `LYRICS_DB_PATH`，则以该变量指向的 `.db` 文件为准。它是你后续录入、导入和审核实际写入的数据库。
-
-不要直接把运行中的 `data/lyrics.db` 上传到 GitHub Release，也不要上传同目录的 `lyrics.db-wal` 或 `lyrics.db-shm`。请先生成一致性快照：构建命令会执行 WAL checkpoint 和 `VACUUM INTO`，再校验快照内容。
+日常录入、导入与审核默认写入 `data/lyrics.db`；设置 `LYRICS_DB_PATH` 时使用该文件。不要在数据库运行时直接复制 `.db` 或只上传 WAL 文件。
 
 ```bash
-# 默认从 data/lyrics.db 构建
-npm run db:release -- --version YYYY.MM.DD
+# 完整私有备份：包含原始歌词、候选及审核记录，不上传公开 Release
+npm run db:backup -- --version YYYY.MM.DD
 
-# 若使用了自定义运行数据库，明确指定它
-npm run db:release -- \
-  --db /absolute/path/lyrics.db \
-  --version YYYY.MM.DD
+# 自定义运行库的完整备份
+npm run db:backup -- --db /absolute/path/lyrics.db --version YYYY.MM.DD
+
+# 公开演示数据库：只从仓库种子生成，不读取运行库
+npm run db:release -- --version YYYY.MM.DD
 ```
 
-上述命令会生成下面三个 Release 附件；请三个都上传：
+完整备份默认位于 `data/backups/snapshots/版本/`。演示附件位于 `dist/releases/版本/`，包含 `.db`、`.db.sha256`、`.manifest.json` 三个文件。后者的 `release_type` 为 `demo_sqlite_database`，统计为 20 条摘句、0 首原始来源歌曲、0 条候选。
 
-| 文件 | 是否上传 | 用途 |
-| --- | --- | --- |
-| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.db` | 是 | 给用户替换使用的独立 SQLite 数据库 |
-| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.db.sha256` | 是 | 数据库 SHA-256 校验文件 |
-| `dist/releases/YYYY.MM.DD/sps-lyric-api-YYYY.MM.DD.manifest.json` | 是 | 版本、统计和安装说明 |
-| `data/lyrics.db`、`lyrics.db-wal`、`lyrics.db-shm` | 否 | 本机运行文件，不作为 Release 直接上传 |
+发布代码或分发内容时，分别遵循 [NOTICE.md](NOTICE.md) 的许可边界。不要把自己的完整私有备份当作演示发布库。来源与许可未经确认的数据仍应保留在本机。
 
-用户下载 Release 后，可按 [README 的安装步骤](./README.md#安装发布数据库)预检、停止服务，再执行 `npm run db:install -- --asset RELEASE_DB --checksum RELEASE_SHA256 --apply` 完成校验和原子替换。安装会整体替换运行库，不合并本机新增或审核的数据；已有运行库会先备份到目标文件旁的 `backups/` 目录，具体路径见命令输出的 `backup` 字段。
-
-若服务使用自定义的 `LYRICS_DB_PATH`，安装命令也必须用 `--db` 显式指定同一个文件，`db:install` 不读取该环境变量。发布前请确认数据库中的来源、作者标注及再分发条件符合你的发布范围。
+安装与回滚见 [部署文档](docs/deployment.md)。替换数据库前停止所有使用该文件的实例；安装会整体替换而不合并内容。安装器使用显式 `--db` 参数，不读取 `LYRICS_DB_PATH`。
 
 ## API 一览
 
